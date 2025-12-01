@@ -1,0 +1,111 @@
+{% extends 'Agences/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">
+                    <i class="fas fa-edit me-2"></i>Modifier le profil
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_prenoms" class="form-label">Prénoms *</label>
+                            <input type="text" name="prenoms" id="id_prenoms" class="form-control" 
+                                   value="{{ user.prenoms }}" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_nom" class="form-label">Nom</label>
+                            <input type="text" name="nom" id="id_nom" class="form-control" 
+                                   value="{{ user.nom|default:'' }}">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_pseudo" class="form-label">Pseudo *</label>
+                            <input type="text" name="pseudo" id="id_pseudo" class="form-control" 
+                                   value="{{ user.pseudo }}" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_email" class="form-label">Email *</label>
+                            <input type="email" name="email" id="id_email" class="form-control" 
+                                   value="{{ user.email }}" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_agence" class="form-label">Agence</label>
+                            <select name="agence" id="id_agence" class="form-select">
+                                <option value="">Sélectionnez une agence</option>
+                                {% for agence in agences %}
+                                    <option value="{{ agence.id }}" 
+                                            {% if user.agence.id == agence.id %}selected{% endif %}>
+                                        {{ agence.nom }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="id_poste" class="form-label">Poste</label>
+                            <select name="poste" id="id_poste" class="form-select">
+                                <option value="">Sélectionnez un poste</option>
+                                {% for poste in postes %}
+                                    <option value="{{ poste.id }}" 
+                                            {% if user.poste.id == poste.id %}selected{% endif %}>
+                                        {{ poste.get_nom_display }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_types_prestation" class="form-label">Types de prestation</label>
+                        <select name="types_prestation" id="id_types_prestation" class="form-select" multiple>
+                            {% for prestation in prestations %}
+                                <option value="{{ prestation.id }}" 
+                                        {% if prestation in user.types_prestation.all %}selected{% endif %}>
+                                    {{ prestation.nom }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Maintenez Ctrl (ou Cmd) pour sélectionner plusieurs prestations</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="id_photo" class="form-label">Photo de profil</label>
+                        <input type="file" name="photo" id="id_photo" class="form-control" 
+                               accept="image/*">
+                        {% if user.photo %}
+                            <div class="mt-2">
+                                <small>Photo actuelle :</small>
+                                <img src="{{ user.photo.url }}" alt="Photo actuelle" 
+                                     class="rounded ms-2" style="width: 50px; height: 50px; object-fit: cover;">
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Enregistrer les modifications
+                        </button>
+                        <a href="{% url 'profil' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Annuler
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

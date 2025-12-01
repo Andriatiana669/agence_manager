@@ -1,0 +1,26 @@
+{% extends 'Agences/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center min-vh-100 align-items-center">
+    <div class="col-md-6 text-center">
+        <div class="card">
+            <div class="card-body py-5">
+                <i class="fas fa-exclamation-triangle fa-5x text-warning mb-4"></i>
+                <h1 class="display-4 text-danger">404</h1>
+                <h3 class="mb-4">Page non trouvée</h3>
+                <p class="lead text-muted mb-4">
+                    Désolé, la page que vous recherchez n'existe pas ou a été déplacée.
+                </p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{% url 'profil' %}" class="btn btn-primary">
+                        <i class="fas fa-home me-2"></i>Retour à l'accueil
+                    </a>
+                    <button onclick="history.back()" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Retour
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

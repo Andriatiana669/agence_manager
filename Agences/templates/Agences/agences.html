@@ -1,0 +1,90 @@
+{% extends 'Agences/base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-building me-2"></i>Liste des Agences</h2>
+    <span class="badge bg-primary fs-6">
+        <i class="fas fa-eye me-1"></i>Vue : {{ user.poste.get_nom_display|default:"Tous les postes" }}
+    </span>
+</div>
+
+<!-- Statistiques générales filtrées par poste -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Statistiques des agences - Vue {{ user.poste.get_nom_display|default:"Tous postes" }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h3 class="text-primary">{{ total_agences }}</h3>
+                        <p class="text-muted">Agences totales</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-success">{{ total_membres_meme_poste }}</h3>
+                        <p class="text-muted">{{ user.poste.get_nom_display|default:"Tous" }} total</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-info">{{ moyenne_membres_meme_poste|floatformat:1 }}</h3>
+                        <p class="text-muted">Moyenne {{ user.poste.get_nom_display|default:"membres" }} par agence</p>
+                    </div>
+                    <div class="col-md-3">
+                        <h3 class="text-warning">{{ agence_plus_membres.nom|default:"-" }}</h3>
+                        <p class="text-muted">Plus de {{ user.poste.get_nom_display|default:"membres" }}</p>
+                    </div>
+                </div>
+
+                <!-- Répartition par poste dans chaque agence -->
+                {% if repartition_poste %}
+                <div class="mt-4">
+                    <h6 class="text-primary mb-3">
+                        <i class="fas fa-chart-pie me-2"></i>Répartition des postes dans les agences
+                    </h6>
+                    <div class="row">
+                        {% for agence_nom, postes in repartition_poste.items %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card border-0 bg-light">
+                                <div class="card-body py-2">
+                                    <h6 class="card-title mb-2">{{ agence_nom }}</h6>
+                                    {% for poste_nom, count in postes.items %}
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <small>{{ poste_nom }}</small>
+                                        <span class="badge {% if poste_nom == user.poste.get_nom_display %}bg-primary{% else %}bg-secondary{% endif %}">
+                                            {{ count }}
+                                        </span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Information sur le filtre -->
+<div class="alert alert-info mt-4">
+    <div class="d-flex align-items-center">
+        <i class="fas fa-info-circle fa-2x me-3"></i>
+        <div>
+            <h6 class="alert-heading mb-1">Filtre actif</h6>
+            <p class="mb-0">
+                Vous visualisez uniquement les membres ayant le même poste que vous
+                <strong>({{ user.poste.get_nom_display|default:"Aucun poste défini" }})</strong>.
+                {% if user.poste %}
+                Cette vue vous permet de voir vos collègues directs dans chaque agence.
+                {% else %}
+                Veuillez définir votre poste dans votre profil pour bénéficier de cette fonctionnalité.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

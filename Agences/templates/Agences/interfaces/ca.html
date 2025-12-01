@@ -1,0 +1,3326 @@
+{% extends 'Agences/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-calculator me-2"></i>Tableau de Bord Chargé d'Affaire</h2>
+</div>
+
+<!-- Alertes pour les projets en retard -->
+<div id="alertes-container"></div>
+
+<!-- Sélecteur de Vue -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="btn-group w-100" role="group">
+                    <button type="button" class="btn btn-outline-primary active" data-view="gantt">
+                        <i class="fas fa-project-diagram me-2"></i>Vue Gantt
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-view="kanban">
+                        <i class="fas fa-columns me-2"></i>Vue Kanban
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-view="timeline">
+                        <i class="fas fa-stream me-2"></i>Timeline
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" data-view="calendar">
+                        <i class="fas fa-calendar-alt me-2"></i>Calendrier
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtres -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="card-title mb-0">
+                    <i class="fas fa-filter me-2"></i>Filtres
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Filtre État -->
+                    <div class="col-md-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold mb-0">État</label>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-secondary" onclick="toggleAllCheckboxes('etat', true)">Tout</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="toggleAllCheckboxes('etat', false)">Aucun</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="invertCheckboxes('etat')">Inverser</button>
+                            </div>
+                        </div>
+                        <div class="filter-group" id="filter-etat">
+                            <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" value="AO Gagné" id="filter-ao-gagne" checked>
+                                <label class="form-check-label" for="filter-ao-gagne">
+                                    AO Gagné
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" value="Traitement France en cours" id="filter-traitement-france-en-cours" checked>
+                                <label class="form-check-label" for="filter-traitement-france-en-cours">
+                                    Traitement France en cours
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" value="Terrain France" id="filter-terrain-france" checked>
+                                <label class="form-check-label" for="filter-terrain-france">
+                                    Terrain France
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" value="Traitement France" id="filter-traitement-france" checked>
+                                <label class="form-check-label" for="filter-traitement-france">
+                                    Traitement France
+                                </label>
+                            </div>
+                            <!--
+                            <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" value="Prêt pour envoi Mada" id="filter-pret-envoi-mada" checked>
+                                <label class="form-check-label" for="filter-pret-envoi-mada">
+                                    Prêt pour envoi Mada
+                                </label>
+                            </div>
+                            -->
+                            <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" value="Envoi des données à Mada" id="filter-envoi-mada" checked>
+                                <label class="form-check-label" for="filter-envoi-mada">
+                                    Envoi des données à Mada
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" value="Reprise des données France" id="filter-reprise-france" checked>
+                                <label class="form-check-label" for="filter-reprise-france">
+                                    Reprise des données France
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" value="Prod en cours Mada" id="filter-prod-mada" checked>
+                                <label class="form-check-label" for="filter-prod-mada">
+                                    Prod en cours Mada
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filtre Agence -->
+                    <div class="col-md-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold mb-0">Agence</label>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-secondary" onclick="toggleAllCheckboxes('agence', true)">Tout</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="toggleAllCheckboxes('agence', false)">Aucun</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="invertCheckboxes('agence')">Inverser</button>
+                            </div>
+                        </div>
+                        <div class="filter-group" id="filter-agence">
+                            {% for agence in agences %}
+                            <div class="form-check">
+                                <input class="form-check-input filter-checkbox" type="checkbox" value="{{ agence.nom }}" id="filter-agence-{{ agence.id }}" checked>
+                                <label class="form-check-label" for="filter-agence-{{ agence.id }}">
+                                    {{ agence.nom }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Filtre Responsable Prod -->
+                    <div class="col-md-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold mb-0">Responsable Prod</label>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-secondary" onclick="toggleAllCheckboxes('prod', true)">Tout</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="toggleAllCheckboxes('prod', false)">Aucun</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="invertCheckboxes('prod')">Inverser</button>
+                            </div>
+                        </div>
+                        <div class="filter-group" id="filter-prod">
+                            <!-- Chargé dynamiquement -->
+                        </div>
+                    </div>
+
+                    <!-- Filtre Projets -->
+                    <div class="col-md-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold mb-0">Projets</label>
+                            <div class="btn-group btn-group-sm">
+                                <button type="button" class="btn btn-outline-secondary" onclick="toggleAllCheckboxes('projet', true)">Tout</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="toggleAllCheckboxes('projet', false)">Aucun</button>
+                                <button type="button" class="btn btn-outline-secondary" onclick="invertCheckboxes('projet')">Inverser</button>
+                            </div>
+                        </div>
+                        <div class="filter-group" id="filter-projet">
+                            <!-- Chargé dynamiquement -->
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3 d-flex justify-content-between">
+                    <button class="btn btn-sm btn-outline-secondary" id="reset-filters">
+                        <i class="fas fa-redo me-1"></i>Réinitialiser les filtres
+                    </button>
+                    <button class="btn btn-sm btn-primary" id="apply-filters">
+                        <i class="fas fa-check me-1"></i>Appliquer les filtres
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Gantt -->
+<div id="gantt-view" class="view-content">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-project-diagram me-2"></i>Diagramme de Gantt - CA
+                    </h5>
+                    <div class="gantt-controls">
+                        <!-- Contrôles ajoutés dynamiquement -->
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="gantt-container">
+
+                        <div class="gantt-header">
+                            <div class="gantt-sidebar-header">Projets</div>
+                            <div class="gantt-timeline-header" id="gantt-timeline-header">
+                                <!-- En-tête de timeline généré dynamiquement -->
+                            </div>
+                        </div>
+                        <div class="gantt-body">
+                            <div class="gantt-sidebar">
+                                <div class="gantt-task-list" id="gantt-task-list">
+                                    <!-- Liste des tâches générée dynamiquement -->
+                                </div>
+                            </div>
+                            <div class="gantt-timeline">
+                                <div class="gantt-grid" id="gantt-grid">
+                                    <!-- Grille du Gantt générée dynamiquement -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Kanban -->
+<div id="kanban-view" class="view-content d-none">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-columns me-2"></i>Tableau Kanban - CA
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="kanban-board" id="kanban-board">
+                        <!-- Colonnes Kanban générées dynamiquement -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Timeline -->
+<div id="timeline-view" class="view-content d-none">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-stream me-2"></i>Timeline - CA
+                    </h5>
+                    <div class="d-flex align-items-center">
+                        <div class="timeline-info me-2">
+                            <span class="badge bg-primary">
+                                <i class="fas fa-clock me-1"></i>
+                                <span id="timeline-current-time"></span>
+                            </span>
+                        </div>
+                        <div class="timeline-controls">
+                            <!-- Contrôles ajoutés dynamiquement -->
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="timeline-container">
+                        <div class="timeline-header" id="timeline-header">
+                            <!-- En-tête de timeline généré dynamiquement -->
+                        </div>
+                        <div class="timeline-events" id="timeline-events">
+                            <!-- Événements de timeline générés dynamiquement -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Vue Calendrier -->
+<div id="calendar-view" class="view-content d-none">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-calendar-alt me-2"></i>Calendrier - CA
+                    </h5>
+                    <div class="calendar-controls">
+                        <button class="btn btn-sm btn-outline-secondary" id="calendar-today">
+                            Aujourd'hui
+                        </button>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-secondary" id="calendar-prev">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" id="calendar-next">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <span class="calendar-current-month ms-2 fw-bold" id="calendar-current-month"></span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="calendar-container">
+                        <div class="calendar-header">
+                            <div class="calendar-weekdays">
+                                <div class="calendar-weekday">Lun</div>
+                                <div class="calendar-weekday">Mar</div>
+                                <div class="calendar-weekday">Mer</div>
+                                <div class="calendar-weekday">Jeu</div>
+                                <div class="calendar-weekday">Ven</div>
+                                <div class="calendar-weekday weekend">Sam</div>
+                                <div class="calendar-weekday weekend">Dim</div>
+                            </div>
+                        </div>
+                        <div class="calendar-grid" id="calendar-grid">
+                            <!-- Grille du calendrier générée dynamiquement -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Modal pour commencer Terrain France -->
+<div class="modal fade" id="terrainFranceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Commencer Terrain France</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="terrainFranceForm">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <input type="hidden" id="terrain-ao-id">
+                    <div class="mb-3">
+                        <label for="nom_affaire" class="form-label">Nom de l'affaire *</label>
+                        <input type="text" class="form-control" id="nom_affaire" name="nom_affaire" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="date_debut_terrain" class="form-label">Date début *</label>
+                            <input type="date" class="form-control" id="date_debut_terrain" name="date_debut_terrain" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="date_fin_prevue_terrain" class="form-label">Date fin prévue *</label>
+                            <input type="date" class="form-control" id="date_fin_prevue_terrain" name="date_fin_prevue_terrain" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="agence_terrain" class="form-label">Agence *</label>
+                        <select class="form-select" id="agence_terrain" name="agence_terrain" required>
+                            <option value="">Sélectionnez une agence</option>
+                            {% for agence in agences %}
+                            <option value="{{ agence.id }}">{{ agence.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="responsable_prod_terrain" class="form-label">Responsable Prod *</label>
+                        <select class="form-select" id="responsable_prod_terrain" name="responsable_prod_terrain" required>
+                            <option value="">Sélectionnez un responsable</option>
+                            <!-- Chargé dynamiquement -->
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Commencer Terrain France</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour fin Terrain France -->
+<div class="modal fade" id="finTerrainFranceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Fin Terrain France</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Confirmez-vous la fin du terrain France ?</p>
+                <div class="mb-3">
+                    <label for="commentaire_fin_terrain" class="form-label">Commentaire (optionnel)</label>
+                    <textarea class="form-control" id="commentaire_fin_terrain" rows="3"
+                              placeholder="Commentaire sur la fin du terrain..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-success" id="confirm-fin-terrain">Fin Terrain France</button>
+                <button type="button" class="btn btn-primary" id="commencer-traitement" style="display: none;">
+                    Commencer Traitement France
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour commencer Traitement France -->
+<div class="modal fade" id="traitementFranceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">Commencer Traitement France</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="traitementFranceForm">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <input type="hidden" id="traitement-ao-id">
+                    <div class="mb-3">
+                        <label for="nom_affaire_traitement" class="form-label">Nom de l'affaire *</label>
+                        <input type="text" class="form-control" id="nom_affaire_traitement" name="nom_affaire_traitement" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="date_debut_traitement" class="form-label">Date début *</label>
+                            <input type="date" class="form-control" id="date_debut_traitement" name="date_debut_traitement" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="date_fin_prevue_traitement" class="form-label">Date fin prévue *</label>
+                            <input type="date" class="form-control" id="date_fin_prevue_traitement" name="date_fin_prevue_traitement" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="agence_traitement" class="form-label">Agence *</label>
+                        <select class="form-select" id="agence_traitement" name="agence_traitement" required>
+                            <option value="">Sélectionnez une agence</option>
+                            {% for agence in agences %}
+                            <option value="{{ agence.id }}">{{ agence.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="responsable_prod_traitement" class="form-label">Responsable Prod *</label>
+                        <select class="form-select" id="responsable_prod_traitement" name="responsable_prod_traitement" required>
+                            <option value="">Sélectionnez un responsable</option>
+                            <!-- Chargé dynamiquement -->
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary">Commencer Traitement France</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour fin Traitement France -->
+<div class="modal fade" id="finTraitementFranceModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">Fin Traitement France</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Confirmez-vous la fin du traitement France ?</p>
+                <div class="mb-3">
+                    <label for="commentaire_fin_traitement" class="form-label">Commentaire (optionnel)</label>
+                    <textarea class="form-control" id="commentaire_fin_traitement" rows="3"
+                              placeholder="Commentaire sur la fin du traitement..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-success" id="confirm-fin-traitement">Fin Traitement France</button>
+                <button type="button" class="btn btn-primary" id="envoyer-mada" style="display: none;">
+                    Envoie les données à Mada
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal pour envoi des données à Mada -->
+<div class="modal fade" id="envoiMadaModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">Envoi des données à Mada</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="envoiMadaForm">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <input type="hidden" id="envoi-ao-id">
+                    <div class="mb-3">
+                        <label for="nom_affaire_envoi" class="form-label">Nom de l'affaire</label>
+                        <input type="text" class="form-control" id="nom_affaire_envoi" name="nom_affaire_envoi" readonly>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="date_envoi" class="form-label">Date d'envoi *</label>
+                            <input type="date" class="form-control" id="date_envoi" name="date_envoi" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="date_livraison" class="form-label">Date de livraison *</label>
+                            <input type="date" class="form-control" id="date_livraison" name="date_livraison" required>
+                        </div>
+
+                    </div>
+                    <div class="mb-3">
+                        <label for="agence_envoi" class="form-label">Agence</label>
+                        <input type="text" class="form-control" id="agence_envoi" name="agence_envoi" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="responsable_prod_envoi" class="form-label">Responsable Prod</label>
+                        <input type="text" class="form-control" id="responsable_prod_envoi" name="responsable_prod_envoi" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="info_supplementaire" class="form-label">Information supplémentaire (optionnelle)</label>
+                        <textarea class="form-control" id="info_supplementaire" name="info_supplementaire" rows="3"
+                                  placeholder="Informations supplémentaires pour Mada..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-warning">Envoyer à Mada</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.view-content {
+    min-height: 600px;
+}
+
+/* Styles Gantt identiques au commercial.html */
+.gantt-container {
+    display: flex;
+    flex-direction: column;
+    height: 500px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.gantt-header {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.gantt-sidebar-header {
+    width: 300px;
+    padding: 10px;
+    font-weight: bold;
+    border-right: 1px solid #dee2e6;
+}
+
+.gantt-timeline-header {
+    flex: 1;
+    display: flex;
+    overflow-x: hidden;
+    min-width: 0;
+}
+
+.gantt-timeline-header .gantt-period {
+    padding: 10px 2px;
+    text-align: center;
+    min-width: 80px;
+    border-right: 1px solid #dee2e6;
+    font-weight: bold;
+    flex-shrink: 0;
+    font-size: 0.8em;
+    line-height: 1.2;
+}
+
+.gantt-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.gantt-sidebar {
+    width: 300px;
+    border-right: 1px solid #dee2e6;
+    overflow-y: auto;
+}
+
+.gantt-timeline {
+    flex: 1;
+    overflow: auto;
+    position: relative;
+}
+
+.gantt-grid {
+    position: relative;
+    height: 100%;
+    min-width: 2000px;
+}
+
+.gantt-bar {
+    position: absolute;
+    height: 30px;
+    border-radius: 4px;
+    margin-top: 5px;
+    cursor: pointer;
+    transition: all 0.2s;
+    opacity: 0.8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
+}
+
+.gantt-bar:hover {
+    transform: translateY(-1px);
+    opacity: 1;
+}
+
+/* Styles Kanban */
+.kanban-board {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding: 20px 0;
+    min-height: 500px;
+}
+
+.kanban-column {
+    min-width: 300px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.kanban-column-header {
+    font-weight: bold;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.kanban-card {
+    background: white;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: all 0.2s;
+    border-left: 4px solid #6c757d;
+    position: relative;
+}
+
+.kanban-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Styles Timeline identiques au commercial.html */
+.timeline-container {
+    position: relative;
+    height: 400px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #dee2e6;
+}
+
+.timeline-header {
+    display: flex;
+    background: #e9ecef;
+    border-bottom: 1px solid #dee2e6;
+    overflow-x: hidden;
+}
+
+.timeline-period {
+    padding: 10px 2px;
+    text-align: center;
+    min-width: 100px;
+    border-right: 1px solid #dee2e6;
+    font-weight: bold;
+    flex-shrink: 0;
+    font-size: 0.8em;
+    line-height: 1.2;
+}
+
+.timeline-events {
+    position: relative;
+    height: calc(100% - 50px);
+    overflow: auto;
+}
+
+.timeline-content {
+    min-width: 100%;
+    position: relative;
+    height: 100%;
+}
+
+.timeline-event {
+    position: absolute;
+    background: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    min-width: 200px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border-left: 4px solid #6c757d;
+    opacity: 0.8;
+}
+
+.timeline-event:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    opacity: 1;
+}
+
+/* Styles Calendrier identiques au commercial.html */
+.calendar-container {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.calendar-weekday {
+    padding: 15px;
+    text-align: center;
+    font-weight: bold;
+    border-right: 1px solid #dee2e6;
+}
+
+.calendar-weekday.weekend {
+    background: #f8f9fa;
+    color: #dc3545;
+}
+
+.calendar-weekday:last-child {
+    border-right: none;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    grid-auto-rows: 120px;
+}
+
+.calendar-day {
+    border-right: 1px solid #dee2e6;
+    border-bottom: 1px solid #dee2e6;
+    padding: 8px;
+    position: relative;
+    background: white;
+}
+
+.calendar-day:nth-child(7n) {
+    border-right: none;
+}
+
+.calendar-day.other-month {
+    background: #f8f9fa;
+    color: #6c757d;
+}
+
+.calendar-day.today {
+    background: #e3f2fd;
+}
+
+.calendar-day.weekend {
+    background: repeating-linear-gradient(
+        45deg,
+        #f8f9fa,
+        #f8f9fa 10px,
+        #e9ecef 10px,
+        #e9ecef 20px
+    );
+}
+
+.calendar-day-number {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.calendar-event {
+    color: white;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    margin-bottom: 2px;
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    opacity: 0.9;
+    position: relative;
+}
+
+/* Barre du jour actuel */
+.current-day-line {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: #dc3545;
+    z-index: 10;
+    pointer-events: none;
+}
+
+.current-day-line::after {
+    content: "Aujourd'hui";
+    position: absolute;
+    top: -25px;
+    left: -30px;
+    background: #dc3545;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+/* Styles pour les accordéons */
+.accordion-button {
+    font-weight: 600;
+    background-color: #f8f9fa;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: #e3f2fd;
+    color: #0d6efd;
+}
+
+.accordion-body {
+    background-color: #fff;
+    border-left: 3px solid #0d6efd;
+}
+
+/* Icônes pour les étapes */
+.accordion-button::before {
+    margin-right: 10px;
+    font-size: 1.1em;
+}
+
+/* Styles Filtres */
+.filter-group {
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 10px;
+}
+
+.filter-group .form-check {
+    margin-bottom: 5px;
+}
+
+/* Alertes */
+.alerte-retard {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.alerte-retard h6 {
+    color: #721c24;
+    margin-bottom: 5px;
+}
+
+/* Contrôles Gantt améliorés */
+.gantt-controls .btn-group {
+    margin-left: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .gantt-sidebar {
+        width: 200px;
+    }
+
+    .gantt-sidebar-header {
+        width: 200px;
+    }
+
+    .kanban-column {
+        min-width: 250px;
+    }
+
+    .filter-group {
+        max-height: 120px;
+    }
+}
+</style>
+
+<script>
+// Variables globales pour CA
+let projetsCA = [];
+let currentView = 'gantt';
+let currentCalendarDate = new Date();
+let currentYear = new Date().getFullYear();
+let currentTimelineYear = new Date().getFullYear();
+let currentProjetId = null;
+let filtersApplied = false;
+let agencesCouleurs = {};
+
+// Fonctions de base
+function saveCurrentView(view) {
+    localStorage.setItem('currentViewCA', view);
+}
+
+function getCurrentView() {
+    return localStorage.getItem('currentViewCA') || 'gantt';
+}
+
+function getCsrfToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+function getColorForProjet(projet) {
+    // Utiliser la couleur de l'agence ou une couleur par défaut
+    return agencesCouleurs[projet.agence] || projet.couleur || '#007bff';
+}
+
+function showSuccessMessage(message) {
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    const toast = document.createElement('div');
+    toast.className = 'toast align-items-center text-white bg-success border-0';
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-check-circle me-2"></i>${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    toastContainer.appendChild(toast);
+
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+}
+
+function showError(message) {
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    const toast = document.createElement('div');
+    toast.className = 'toast align-items-center text-white bg-danger border-0';
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">
+                <i class="fas fa-exclamation-triangle me-2"></i>${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    toastContainer.appendChild(toast);
+
+    const bsToast = new bootstrap.Toast(toast);
+    bsToast.show();
+}
+
+function createToastContainer() {
+    const container = document.createElement('div');
+    container.id = 'toast-container';
+    container.className = 'toast-container position-fixed top-0 end-0 p-3';
+    container.style.zIndex = '9999';
+    document.body.appendChild(container);
+    return container;
+}
+
+// Chargement initial des données
+document.addEventListener('DOMContentLoaded', function() {
+    currentView = getCurrentView();
+
+    setupEventListeners();
+    loadProjetsCA();
+    loadAgencesCouleurs();
+    loadFilters();
+    loadResponsablesProd();
+
+    setTimeout(() => {
+        switchView(currentView);
+    }, 100);
+});
+
+function setupEventListeners() {
+    // Changement de vue
+    document.querySelectorAll('[data-view]').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const view = this.getAttribute('data-view');
+            switchView(view);
+        });
+    });
+
+    // Contrôles calendrier
+    const calendarToday = document.getElementById('calendar-today');
+    const calendarPrev = document.getElementById('calendar-prev');
+    const calendarNext = document.getElementById('calendar-next');
+    if (calendarToday) calendarToday.addEventListener('click', showTodayCalendar);
+    if (calendarPrev) calendarPrev.addEventListener('click', prevMonthCalendar);
+    if (calendarNext) calendarNext.addEventListener('click', nextMonthCalendar);
+
+    // Filtres
+    document.getElementById('apply-filters').addEventListener('click', applyFilters);
+    document.getElementById('reset-filters').addEventListener('click', resetFilters);
+
+    // Modals
+    document.getElementById('terrainFranceForm').addEventListener('submit', commencerTerrainFrance);
+    document.getElementById('traitementFranceForm').addEventListener('submit', commencerTraitementFrance);
+    document.getElementById('envoiMadaForm').addEventListener('submit', envoyerDonneesMada);
+    document.getElementById('confirm-fin-terrain').addEventListener('click', confirmerFinTerrain);
+    document.getElementById('confirm-fin-traitement').addEventListener('click', confirmerFinTraitement);
+    document.getElementById('commencer-traitement').addEventListener('click', () => showTraitementFranceModal(currentProjetId));
+    document.getElementById('envoyer-mada').addEventListener('click', showEnvoiMadaModal);
+
+    document.getElementById('agence_terrain').addEventListener('change', function() {
+        const responsablesSelect = document.getElementById('responsable_prod_terrain');
+        // Passer l'ID de l'agence sélectionnée
+        loadResponsablesProdByAgence(this.value, responsablesSelect);
+    });
+
+    document.getElementById('agence_traitement').addEventListener('change', function() {
+        const responsablesSelect = document.getElementById('responsable_prod_traitement');
+        // Passer l'ID de l'agence sélectionnée
+        loadResponsablesProdByAgence(this.value, responsablesSelect);
+    });
+
+    // Synchronisation du scroll
+    synchronizeGanttScroll();
+    synchronizeTimelineScroll();
+    synchronizeKanbanScroll();
+}
+
+// === CHARGEMENT DES DONNÉES ===
+
+function loadProjetsCA() {
+    return fetch('/agences/api/projets-ca/')  // ← Ajout du return ici
+        .then(response => response.json())
+        .then(data => {
+            projetsCA = data.projets;
+            updateAllViews();
+            updateFilterProd();
+            updateFilterProjet();
+            updateAlertes();
+            return data;  // ← Optionnel : retourne les data pour chaîner si besoin
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement des projets CA:', error);
+            showError('Erreur lors du chargement des données');
+            throw error;  // ← Propager l'erreur pour .catch en aval
+        });
+
+}
+
+function loadAgencesCouleurs() {
+    fetch('/agences/api/agences-couleurs/')
+        .then(response => response.json())
+        .then(data => {
+            agencesCouleurs = data.couleurs;
+            updateAllViews();
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement des couleurs:', error);
+            agencesCouleurs = {};
+        });
+}
+
+function loadResponsablesProd() {
+    fetch('/agences/api/responsables-prod/')
+        .then(response => response.json())
+        .then(data => {
+            const selectTerrain = document.getElementById('responsable_prod_terrain');
+            const selectTraitement = document.getElementById('responsable_prod_traitement');
+
+            if (selectTerrain && selectTraitement) {
+                selectTerrain.innerHTML = '<option value="">Sélectionnez un responsable</option>';
+                selectTraitement.innerHTML = '<option value="">Sélectionnez un responsable</option>';
+
+                data.responsables.forEach(responsable => {
+                    const option1 = document.createElement('option');
+                    option1.value = responsable.id;
+                    option1.textContent = `${responsable.prenoms} ${responsable.nom}`;
+                    selectTerrain.appendChild(option1);
+
+                    const option2 = document.createElement('option');
+                    option2.value = responsable.id;
+                    option2.textContent = `${responsable.prenoms} ${responsable.nom}`;
+                    selectTraitement.appendChild(option2);
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement des responsables prod:', error);
+        });
+}
+
+// === GESTION DES VUES ===
+
+function switchView(view) {
+    currentView = view;
+    saveCurrentView(view);
+
+    document.querySelectorAll('[data-view]').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    document.querySelector(`[data-view="${view}"]`).classList.add('active');
+
+    document.querySelectorAll('.view-content').forEach(v => {
+        v.classList.add('d-none');
+    });
+    document.getElementById(`${view}-view`).classList.remove('d-none');
+
+    updateCurrentView();
+}
+
+function updateCurrentView() {
+    switch(currentView) {
+        case 'gantt':
+            addGanttControls();
+            generateGanttView();
+            synchronizeGanttScroll();
+            break;
+        case 'kanban':
+            generateKanbanView();
+            synchronizeKanbanScroll();
+            break;
+        case 'timeline':
+            addTimelineControls();
+            generateTimelineView();
+            synchronizeTimelineScroll();
+            break;
+        case 'calendar':
+            generateCalendarView();
+            break;
+    }
+}
+
+function addGanttControls() {
+    const ganttControls = document.querySelector('#gantt-view .gantt-controls');
+    if (ganttControls && !document.getElementById('gantt-year-display')) {
+        ganttControls.innerHTML = `
+            <div class="btn-group btn-group-sm me-2">
+                <button class="btn btn-outline-secondary" onclick="prevYearGantt()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="btn btn-outline-secondary disabled" id="gantt-year-display">${currentYear}</button>
+                <button class="btn btn-outline-secondary" onclick="nextYearGantt()">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        `;
+    }
+}
+
+function addTimelineControls() {
+    const timelineControls = document.querySelector('#timeline-view .timeline-controls');
+    if (timelineControls && !document.getElementById('timeline-year-display')) {
+        timelineControls.innerHTML = `
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-outline-secondary" onclick="prevYearTimeline()">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="btn btn-outline-secondary disabled" id="timeline-year-display">${currentTimelineYear}</button>
+                <button class="btn btn-outline-secondary" onclick="nextYearTimeline()">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        `;
+    }
+}
+
+// === GÉNÉRATION DES VUES ===
+
+function generateGanttView() {
+    const timelineHeader = document.getElementById('gantt-timeline-header');
+    const ganttGrid = document.getElementById('gantt-grid');
+
+    if (!timelineHeader || !ganttGrid) return;
+
+
+    timelineHeader.innerHTML = '';
+    ganttGrid.innerHTML = '';
+
+    // SUPPRIMER LA SIDEBAR
+    document.querySelector('.gantt-sidebar').style.display = 'none';
+    document.querySelector('.gantt-sidebar-header').style.display = 'none';
+    document.querySelector('.gantt-sidebar').style.width = '0';
+    document.querySelector('.gantt-sidebar-header').style.width = '0';
+
+    let projetsFiltres = getProjetsFiltres();
+    projetsFiltres.sort((a, b) => new Date(a.date_debut_ao) - new Date(b.date_debut_ao));
+
+    if (projetsFiltres.length === 0) {
+        ganttGrid.innerHTML = '<div class="text-center text-muted mt-5">Aucun projet trouvé</div>';
+        return;
+    }
+
+    // Période fixe : année complète
+    let minDate = new Date(currentYear, 0, 1);
+    let maxDate = new Date(currentYear, 11, 31);
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const totalDays = Math.floor((maxDate - minDate) / msPerDay) + 1;
+    const daysToShow = totalDays;
+    const dayWidth = 80;
+
+    // Générer l'en-tête de timeline (jours de l'année)
+    for (let i = 0; i < daysToShow; i++) {
+        const date = new Date(minDate);
+        date.setDate(minDate.getDate() + i);
+        const period = document.createElement('div');
+        period.className = 'gantt-period';
+        period.style.width = `${dayWidth}px`;
+        period.style.minWidth = `${dayWidth}px`;
+        period.textContent = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+        period.title = date.toLocaleDateString('fr-FR');
+        timelineHeader.appendChild(period);
+    }
+
+    // Ajouter la barre du jour actuel si dans l'année
+    const today = new Date();
+    if (today.getFullYear() === currentYear) {
+        const todayOffset = Math.floor((today - minDate) / msPerDay);
+        if (todayOffset >= 0 && todayOffset < daysToShow) {
+            const todayLine = document.createElement('div');
+            todayLine.className = 'current-day-line';
+            todayLine.style.left = `${todayOffset * dayWidth}px`;
+            ganttGrid.appendChild(todayLine);
+        }
+    }
+
+    // Générer les barres pour chaque projet - MÊME LIGNE
+    projetsFiltres.forEach((projet, index) => {
+        const color = getColorForProjet(projet);
+        const barHeight = 20;
+        const verticalSpacing = 5;
+        const topPosition = index * (barHeight + verticalSpacing) + 10;
+
+        // Barre AO Gagné (toujours présente)
+        if (projet.date_debut_ao && projet.date_fin_ao) {
+            const startDateAO = new Date(projet.date_debut_ao);
+            const endDateAO = new Date(projet.date_fin_reelle_ao || projet.date_fin_ao);
+            const visibleStartAO = new Date(Math.max(startDateAO, minDate));
+            const visibleEndAO = new Date(Math.min(endDateAO, maxDate));
+
+            if (visibleStartAO <= visibleEndAO) {
+                const vStartOffsetAO = Math.floor((visibleStartAO - minDate) / msPerDay);
+                const vDurationAO = Math.floor((visibleEndAO - visibleStartAO) / msPerDay) + 1;
+
+                const barAO = document.createElement('div');
+
+                // AJOUT: Couleur rouge pour problème de réception
+                if (projet.etape === 'Problème de réception') {
+                    barAO.style.background = '#dc3545';
+                    barAO.style.opacity = '0.8';
+                } else {
+                    barAO.style.background = color;
+                }
+
+                barAO.className = 'gantt-bar';
+                barAO.style.background = color;
+                barAO.style.left = `${vStartOffsetAO * dayWidth}px`;
+                barAO.style.width = `${Math.max(5, vDurationAO * dayWidth)}px`;
+                barAO.style.top = `${topPosition}px`;
+                barAO.style.height = `${barHeight}px`;
+                barAO.innerHTML = `<span style="font-size: 10px;">${projet.reference} - AO Gagné</span>`;
+                barAO.title = `${projet.reference} - AO Gagné\n${startDateAO.toLocaleDateString()} → ${endDateAO.toLocaleDateString()}`;
+                barAO.onclick = () => showProjetDetails(projet.id);
+                ganttGrid.appendChild(barAO);
+            }
+        }
+
+        // Barre Terrain France (si existante) - MÊME LIGNE
+        if (projet.date_debut_terrain && projet.date_fin_prevue_terrain) {
+            const startDateTF = new Date(projet.date_debut_terrain);
+            const endDateTF = new Date(projet.date_fin_terrain_reelle || projet.date_fin_prevue_terrain);
+            const visibleStartTF = new Date(Math.max(startDateTF, minDate));
+            const visibleEndTF = new Date(Math.min(endDateTF, maxDate));
+
+            if (visibleStartTF <= visibleEndTF) {
+                const vStartOffsetTF = Math.floor((visibleStartTF - minDate) / msPerDay);
+                const vDurationTF = Math.floor((visibleEndTF - visibleStartTF) / msPerDay) + 1;
+
+                const barTF = document.createElement('div');
+                barTF.className = 'gantt-bar';
+                barTF.style.background = color;
+                barTF.style.opacity = '0.7';
+                barTF.style.left = `${vStartOffsetTF * dayWidth}px`;
+                barTF.style.width = `${Math.max(5, vDurationTF * dayWidth)}px`;
+                barTF.style.top = `${topPosition}px`;
+                barTF.style.height = `${barHeight}px`;
+                barTF.innerHTML = `<span style="font-size: 10px;">${projet.reference} - Terrain</span>`;
+                barTF.title = `${projet.reference} - Terrain France\n${startDateTF.toLocaleDateString()} → ${endDateTF.toLocaleDateString()}`;
+                barTF.onclick = () => showProjetDetails(projet.id);
+                ganttGrid.appendChild(barTF);
+            }
+        }
+
+        // NOUVEAU : Barre Traitement France (si existante) - MÊME LIGNE
+        if (projet.date_debut_traitement && projet.date_fin_prevue_traitement) {
+            const startDateTrait = new Date(projet.date_debut_traitement);
+            const endDateTrait = new Date(projet.date_fin_traitement_reelle || projet.date_fin_prevue_traitement);
+            const visibleStartTrait = new Date(Math.max(startDateTrait, minDate));
+            const visibleEndTrait = new Date(Math.min(endDateTrait, maxDate));
+
+            if (visibleStartTrait <= visibleEndTrait) {
+                const vStartOffsetTrait = Math.floor((visibleStartTrait - minDate) / msPerDay);
+                const vDurationTrait = Math.floor((visibleEndTrait - visibleStartTrait) / msPerDay) + 1;
+
+                const barTrait = document.createElement('div');
+                barTrait.className = 'gantt-bar';
+                barTrait.style.background = color;
+                barTrait.style.opacity = '0.6';
+                barTrait.style.left = `${vStartOffsetTrait * dayWidth}px`;
+                barTrait.style.width = `${Math.max(5, vDurationTrait * dayWidth)}px`;
+                barTrait.style.top = `${topPosition}px`;
+                barTrait.style.height = `${barHeight}px`;
+                barTrait.innerHTML = `<span style="font-size: 10px;">${projet.reference} - Traitement</span>`;
+                barTrait.title = `${projet.reference} - Traitement France\n${startDateTrait.toLocaleDateString()} → ${endDateTrait.toLocaleDateString()}`;
+                barTrait.onclick = () => showProjetDetails(projet.id);
+                ganttGrid.appendChild(barTrait);
+            }
+        }
+
+        // NOUVEAU : Barre Envoi Mada (si existante) - MÊME LIGNE
+        if (projet.date_envoi_mada && projet.date_livraison_prevue_mada) {
+            const startDateEnvoi = new Date(projet.date_envoi_mada);
+            const endDateEnvoi = new Date(projet.date_livraison_reelle_mada || projet.date_livraison_prevue_mada);
+            const visibleStartEnvoi = new Date(Math.max(startDateEnvoi, minDate));
+            const visibleEndEnvoi = new Date(Math.min(endDateEnvoi, maxDate));
+
+            if (visibleStartEnvoi <= visibleEndEnvoi) {
+                const vStartOffsetEnvoi = Math.floor((visibleStartEnvoi - minDate) / msPerDay);
+                const vDurationEnvoi = Math.floor((visibleEndEnvoi - visibleStartEnvoi) / msPerDay) + 1;
+
+                const barEnvoi = document.createElement('div');
+                barEnvoi.className = 'gantt-bar';
+                barEnvoi.style.background = color;
+                barEnvoi.style.opacity = '0.5';
+                barEnvoi.style.left = `${vStartOffsetEnvoi * dayWidth}px`;
+                barEnvoi.style.width = `${Math.max(5, vDurationEnvoi * dayWidth)}px`;
+                barEnvoi.style.top = `${topPosition}px`;
+                barEnvoi.style.height = `${barHeight}px`;
+                barEnvoi.innerHTML = `<span style="font-size: 10px;">${projet.reference} - Envoi</span>`;
+                barEnvoi.title = `${projet.reference} - Envoi Mada\n${startDateEnvoi.toLocaleDateString()} → ${endDateEnvoi.toLocaleDateString()}`;
+                barEnvoi.onclick = () => showProjetDetails(projet.id);
+                ganttGrid.appendChild(barEnvoi);
+            }
+        }
+    });
+
+    // Restaurer la position de scroll après génération
+    setTimeout(() => {
+        const timeline = document.querySelector('.gantt-timeline');
+        if (timeline) {
+            const savedScroll = localStorage.getItem('ganttScrollLeftCA');
+            if (savedScroll) {
+                timeline.scrollLeft = parseFloat(savedScroll);
+            }
+        }
+    }, 0);
+}
+
+function generateKanbanView() {
+    const kanbanBoard = document.getElementById('kanban-board');
+    if (!kanbanBoard) return;
+
+    kanbanBoard.innerHTML = '';
+
+    const columns = {
+        'ao-gagne': { title: 'AO Gagné', etape: 'AO Gagné' },
+        'terrain-france': { title: 'Terrain France', etape: 'Terrain France' },
+        'traitement-france': {
+            title: 'Traitement France',
+            etape: ['Traitement France', 'Traitement France en cours']
+        },
+        'envoi-mada': {
+            title: 'Envoi des données à Mada',
+            etape: ['Prêt pour envoi Mada', 'Envoi des données à Mada', 'Problème de réception']
+        },
+        'reprise-france': { title: 'Reprise des données France', etape: 'Reprise des données France' },
+        'complement': { title: 'Complément', etape: 'Complément' },  // Nouvelle colonne entre reprise et prod-mada
+        'prod-mada': { title: 'Prod en cours Mada', etape: 'Prod en cours Mada' }
+    };
+
+    const projetsFiltres = getProjetsFiltres();
+
+    Object.entries(columns).forEach(([key, column]) => {
+        const columnDiv = document.createElement('div');
+        columnDiv.className = 'kanban-column';
+
+        let filteredProjets;
+        if (Array.isArray(column.etape)) {
+            filteredProjets = projetsFiltres.filter(projet => column.etape.includes(projet.etape));
+        } else {
+            filteredProjets = projetsFiltres.filter(projet => projet.etape === column.etape);
+        }
+
+        const count = filteredProjets.length;
+
+        columnDiv.innerHTML = `
+            <div class="kanban-column-header">
+                ${column.title} <span class="badge bg-secondary">${count}</span>
+            </div>
+            <div class="kanban-cards" id="kanban-${key}"></div>
+        `;
+        kanbanBoard.appendChild(columnDiv);
+
+        const cardsContainer = document.getElementById(`kanban-${key}`);
+
+        filteredProjets.forEach(projet => {
+            const color = getColorForProjet(projet);
+            const card = document.createElement('div');
+            card.className = 'kanban-card';
+            card.style.borderLeftColor = color;
+
+            // AJOUT: Fond rouge si problème de réception
+            if (projet.etape === 'Problème de réception') {
+                card.style.backgroundColor = '#f8d7da';
+                card.style.borderLeftColor = '#dc3545';
+            } else {
+                card.style.borderLeftColor = color;
+            }
+
+            // ← NOUVEAU : Obtenir les dates dynamiques selon l'étape
+            const { debut, fin } = getDatesForEtape(projet);
+
+            card.innerHTML = `
+                <h6>${projet.reference}</h6>
+                <p class="mb-1"><small><i class="fas fa-building me-1"></i>${projet.agence}</small></p>
+                <p class="mb-1"><small><i class="fas fa-user me-1"></i>${projet.nom_affaire || 'Non défini'}</small></p>
+                <p class="mb-2"><small><i class="fas fa-calendar me-1"></i>${debut} → ${fin}</small></p>
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-sm btn-outline-primary" onclick="showProjetDetails(${projet.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    ${generateActionButtons(projet)}
+                </div>
+            `;
+            cardsContainer.appendChild(card);
+        });
+    });
+
+    // Modifier generateKanbanView() : ajouter à la fin, avant la fermeture de la fonction
+    setTimeout(() => {
+        const kanbanBoard = document.querySelector('.kanban-board');
+        if (kanbanBoard) {
+            const savedScroll = localStorage.getItem('kanbanScrollLeftCA');
+            if (savedScroll) {
+                kanbanBoard.scrollLeft = parseFloat(savedScroll);
+            }
+        }
+    }, 0);
+}
+
+// ← NOUVEAU : Sous-fonction pour récupérer les dates selon l'étape
+function getDatesForEtape(projet) {
+    let debut = 'N/D';
+    let fin = 'N/D';
+
+    switch(projet.etape) {
+        case 'AO Gagné':
+            debut = projet.date_debut_ao ? formatDate(projet.date_debut_ao) : 'N/D';
+            fin = projet.date_fin_reelle_ao ? formatDate(projet.date_fin_reelle_ao) : (projet.date_fin_ao ? formatDate(projet.date_fin_ao) : 'N/D');
+            break;
+
+        case 'Terrain France':
+            debut = projet.date_debut_terrain ? formatDate(projet.date_debut_terrain) : 'N/D';
+            fin = projet.date_fin_terrain_reelle ? formatDate(projet.date_fin_terrain_reelle) : (projet.date_fin_prevue_terrain ? formatDate(projet.date_fin_prevue_terrain) : 'N/D');
+            break;
+
+        case 'Traitement France':
+        case 'Traitement France en cours':
+            debut = projet.date_debut_traitement ? formatDate(projet.date_debut_traitement) : 'N/D';
+            fin = projet.date_fin_traitement_reelle ? formatDate(projet.date_fin_traitement_reelle) : (projet.date_fin_prevue_traitement ? formatDate(projet.date_fin_prevue_traitement) : 'N/D');
+            break;
+
+        case 'Prêt pour envoi Mada':
+        case 'Envoi des données à Mada':
+            debut = projet.date_envoi_mada ? formatDate(projet.date_envoi_mada) : 'N/D';
+            fin = projet.date_livraison_prevue_mada ? formatDate(projet.date_livraison_prevue_mada) : 'N/D';
+            break;
+
+        case 'Reprise des données France':
+            debut = projet.date_debut_reprise ? formatDate(projet.date_debut_reprise) : 'N/D';
+            fin = projet.date_fin_prevue_reprise ? formatDate(projet.date_fin_prevue_reprise) : 'N/D';
+            break;
+
+        case 'Prod en cours Mada':
+            debut = projet.date_debut_prod_mada ? formatDate(projet.date_debut_prod_mada) : 'N/D';
+            fin = projet.date_fin_prevue_prod_mada ? formatDate(projet.date_fin_prevue_prod_mada) : (projet.date_fin_prod_mada_reelle ? formatDate(projet.date_fin_prod_mada_reelle) : 'N/D');
+            break;
+
+        default:
+            debut = projet.date_debut_ao ? formatDate(projet.date_debut_ao) : 'N/D';
+            fin = projet.date_fin_reelle_ao ? formatDate(projet.date_fin_reelle_ao) : (projet.date_fin_ao ? formatDate(projet.date_fin_ao) : 'N/D');
+    }
+
+    return { debut, fin };
+}
+
+function generateTimelineView() {
+    const timelineEvents = document.getElementById('timeline-events');
+    const timelineHeader = document.getElementById('timeline-header');
+    const currentTime = document.getElementById('timeline-current-time');
+
+    if (!timelineEvents || !timelineHeader || !currentTime) return;
+
+    timelineEvents.innerHTML = '';
+    timelineHeader.innerHTML = '';
+
+    currentTime.textContent = new Date().toLocaleDateString('fr-FR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+
+    const projetsFiltres = getProjetsFiltres();
+
+    if (projetsFiltres.length === 0) {
+        timelineEvents.innerHTML = '<div class="text-center text-muted mt-5">Aucun projet trouvé</div>';
+        return;
+    }
+
+    // Période fixe : année complète
+    let minDate = new Date(currentTimelineYear, 0, 1);
+    let maxDate = new Date(currentTimelineYear, 11, 31);
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const totalDays = Math.floor((maxDate - minDate) / msPerDay) + 1;
+    const daysToShow = totalDays;
+    const dayWidth = 100;
+
+    // En-tête de timeline
+    for (let i = 0; i < daysToShow; i++) {
+        const date = new Date(minDate);
+        date.setDate(minDate.getDate() + i);
+        const period = document.createElement('div');
+        period.className = 'timeline-period';
+        period.style.width = `${dayWidth}px`;
+        period.style.minWidth = `${dayWidth}px`;
+        period.textContent = `${date.getDate()}/${date.getMonth() + 1}`;
+        period.title = date.toLocaleDateString('fr-FR');
+        timelineHeader.appendChild(period);
+    }
+
+    // Conteneur pour les événements
+    const timelineContent = document.createElement('div');
+    timelineContent.className = 'timeline-content';
+    timelineContent.style.width = `${daysToShow * dayWidth}px`;
+    timelineContent.style.position = 'relative';
+    timelineContent.style.height = '100%';
+
+    // Ajouter la barre du jour actuel
+    const today = new Date();
+    if (today.getFullYear() === currentTimelineYear) {
+        const todayOffset = Math.floor((today - minDate) / msPerDay);
+        if (todayOffset >= 0 && todayOffset < daysToShow) {
+            const todayLine = document.createElement('div');
+            todayLine.className = 'current-day-line';
+            todayLine.style.left = `${todayOffset * dayWidth}px`;
+            todayLine.style.height = '100%';
+            timelineContent.appendChild(todayLine);
+        }
+    }
+
+    // Événements pour chaque projet - MÊME LIGNE
+    projetsFiltres.forEach((projet, index) => {
+        const color = getColorForProjet(projet);
+        const eventHeight = 25;
+        const topPosition = index * (eventHeight + 10) + 20;
+
+        // Événement AO Gagné
+        if (projet.date_debut_ao && projet.date_fin_ao) {
+            const startDateAO = new Date(projet.date_debut_ao);
+            const endDateAO = new Date(projet.date_fin_reelle_ao || projet.date_fin_ao);
+            const visibleStartAO = new Date(Math.max(startDateAO, minDate));
+            const visibleEndAO = new Date(Math.min(endDateAO, maxDate));
+
+            if (visibleStartAO <= visibleEndAO) {
+                const vStartOffsetAO = Math.floor((visibleStartAO - minDate) / msPerDay);
+                const vDurationAO = Math.floor((visibleEndAO - visibleStartAO) / msPerDay) + 1;
+
+                const eventAO = document.createElement('div');
+                eventAO.className = 'timeline-event';
+
+                // AJOUT: Couleur rouge pour problème de réception
+                if (projet.etape === 'Problème de réception') {
+                    eventAO.style.background = '#dc3545';
+                    eventAO.style.borderLeftColor = '#dc3545';
+                } else {
+                    eventAO.style.background = color;
+                    eventAO.style.borderLeftColor = color;
+                }
+
+                eventAO.style.background = color;
+                eventAO.style.borderLeftColor = color;
+                eventAO.style.left = `${vStartOffsetAO * dayWidth}px`;
+                eventAO.style.width = `${vDurationAO * dayWidth}px`;
+                eventAO.style.top = `${topPosition}px`;
+                eventAO.style.height = `${eventHeight}px`;
+                // AFFICHAGE CÔTE À CÔTE
+                eventAO.innerHTML = `
+                    <div class="timeline-event-content" style="color: white; font-size: 11px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px;">
+                        <strong>${projet.reference}</strong>
+                        <small>AO Gagné</small>
+                    </div>
+                `;
+                eventAO.onclick = () => showProjetDetails(projet.id);
+                timelineContent.appendChild(eventAO);
+            }
+        }
+
+        // Événement Terrain France (si existant) - MÊME LIGNE
+        if (projet.date_debut_terrain && projet.date_fin_prevue_terrain) {
+            const startDateTF = new Date(projet.date_debut_terrain);
+            const endDateTF = new Date(projet.date_fin_terrain_reelle || projet.date_fin_prevue_terrain);
+            const visibleStartTF = new Date(Math.max(startDateTF, minDate));
+            const visibleEndTF = new Date(Math.min(endDateTF, maxDate));
+
+            if (visibleStartTF <= visibleEndTF) {
+                const vStartOffsetTF = Math.floor((visibleStartTF - minDate) / msPerDay);
+                const vDurationTF = Math.floor((visibleEndTF - visibleStartTF) / msPerDay) + 1;
+
+                const eventTF = document.createElement('div');
+                eventTF.className = 'timeline-event';
+                eventTF.style.background = color;
+                eventTF.style.borderLeftColor = color;
+                eventTF.style.opacity = '0.8';
+                eventTF.style.left = `${vStartOffsetTF * dayWidth}px`;
+                eventTF.style.width = `${vDurationTF * dayWidth}px`;
+                eventTF.style.top = `${topPosition}px`;
+                eventTF.style.height = `${eventHeight}px`;
+                // AFFICHAGE CÔTE À CÔTE
+                eventTF.innerHTML = `
+                    <div class="timeline-event-content" style="color: white; font-size: 11px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px;">
+                        <strong>${projet.reference}</strong>
+                        <small>Terrain</small>
+                    </div>
+                `;
+                eventTF.onclick = () => showProjetDetails(projet.id);
+                timelineContent.appendChild(eventTF);
+            }
+        }
+
+        // NOUVEAU : Événement Traitement France (si existant) - MÊME LIGNE
+        if (projet.date_debut_traitement && projet.date_fin_prevue_traitement) {
+            const startDateTrait = new Date(projet.date_debut_traitement);
+            const endDateTrait = new Date(projet.date_fin_traitement_reelle || projet.date_fin_prevue_traitement);
+            const visibleStartTrait = new Date(Math.max(startDateTrait, minDate));
+            const visibleEndTrait = new Date(Math.min(endDateTrait, maxDate));
+
+            if (visibleStartTrait <= visibleEndTrait) {
+                const vStartOffsetTrait = Math.floor((visibleStartTrait - minDate) / msPerDay);
+                const vDurationTrait = Math.floor((visibleEndTrait - visibleStartTrait) / msPerDay) + 1;
+
+                const eventTrait = document.createElement('div');
+                eventTrait.className = 'timeline-event';
+                eventTrait.style.background = color;
+                eventTrait.style.borderLeftColor = color;
+                eventTrait.style.opacity = '0.7';
+                eventTrait.style.left = `${vStartOffsetTrait * dayWidth}px`;
+                eventTrait.style.width = `${vDurationTrait * dayWidth}px`;
+                eventTrait.style.top = `${topPosition}px`;
+                eventTrait.style.height = `${eventHeight}px`;
+                // AFFICHAGE CÔTE À CÔTE
+                eventTrait.innerHTML = `
+                    <div class="timeline-event-content" style="color: white; font-size: 11px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px;">
+                        <strong>${projet.reference}</strong>
+                        <small>Traitement</small>
+                    </div>
+                `;
+                eventTrait.onclick = () => showProjetDetails(projet.id);
+                timelineContent.appendChild(eventTrait);
+            }
+        }
+
+        // NOUVEAU : Événement Envoi Mada (si existant) - MÊME LIGNE
+        if (projet.date_envoi_mada && projet.date_livraison_prevue_mada) {
+            const startDateEnvoi = new Date(projet.date_envoi_mada);
+            const endDateEnvoi = new Date(projet.date_livraison_reelle_mada || projet.date_livraison_prevue_mada);
+            const visibleStartEnvoi = new Date(Math.max(startDateEnvoi, minDate));
+            const visibleEndEnvoi = new Date(Math.min(endDateEnvoi, maxDate));
+
+            if (visibleStartEnvoi <= visibleEndEnvoi) {
+                const vStartOffsetEnvoi = Math.floor((visibleStartEnvoi - minDate) / msPerDay);
+                const vDurationEnvoi = Math.floor((visibleEndEnvoi - visibleStartEnvoi) / msPerDay) + 1;
+
+                const eventEnvoi = document.createElement('div');
+                eventEnvoi.className = 'timeline-event';
+                eventEnvoi.style.background = color;
+                eventEnvoi.style.borderLeftColor = color;
+                eventEnvoi.style.opacity = '0.6';
+                eventEnvoi.style.left = `${vStartOffsetEnvoi * dayWidth}px`;
+                eventEnvoi.style.width = `${vDurationEnvoi * dayWidth}px`;
+                eventEnvoi.style.top = `${topPosition}px`;
+                eventEnvoi.style.height = `${eventHeight}px`;
+                // AFFICHAGE CÔTE À CÔTE
+                eventEnvoi.innerHTML = `
+                    <div class="timeline-event-content" style="color: white; font-size: 11px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px;">
+                        <strong>${projet.reference}</strong>
+                        <small>Envoi Mada</small>
+                    </div>
+                `;
+                eventEnvoi.onclick = () => showProjetDetails(projet.id);
+                timelineContent.appendChild(eventEnvoi);
+            }
+        }
+    });
+
+    timelineEvents.appendChild(timelineContent);
+
+    // Restaurer la position de scroll après génération
+    setTimeout(() => {
+        const timelineEventsEl = document.querySelector('.timeline-events');
+        if (timelineEventsEl) {
+            const savedScroll = localStorage.getItem('timelineScrollLeftCA');
+            if (savedScroll) {
+                timelineEventsEl.scrollLeft = parseFloat(savedScroll);
+            }
+        }
+    }, 0);
+}
+
+function generateCalendarView() {
+    const calendarGrid = document.getElementById('calendar-grid');
+    const currentMonth = document.getElementById('calendar-current-month');
+
+    if (!calendarGrid || !currentMonth) return;
+
+    calendarGrid.innerHTML = '';
+
+    const monthNames = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+                      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+
+    currentMonth.textContent = `${monthNames[currentCalendarDate.getMonth()]} ${currentCalendarDate.getFullYear()}`;
+
+    const firstDay = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth(), 1);
+    const lastDay = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() + 1, 0);
+    const today = new Date();
+    const projetsFiltres = getProjetsFiltres();
+
+    const startDay = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+
+    // Jours du mois précédent
+    const prevMonthLastDay = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth(), 0).getDate();
+    for (let i = startDay - 1; i >= 0; i--) {
+        const day = document.createElement('div');
+        day.className = 'calendar-day other-month';
+        const dayNumber = prevMonthLastDay - i;
+        const prevMonthDate = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() - 1, dayNumber);
+        day.innerHTML = `<div class="calendar-day-number">${dayNumber}</div>`;
+
+        if (prevMonthDate.getDay() === 0 || prevMonthDate.getDay() === 6) {
+            day.classList.add('weekend');
+        }
+
+        addEventsToCalendarDay(day, prevMonthDate, projetsFiltres);
+        calendarGrid.appendChild(day);
+    }
+
+    // Jours du mois courant
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+        const dayElement = document.createElement('div');
+        const currentDate = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth(), day);
+        const isToday = currentDate.toDateString() === today.toDateString();
+        const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6;
+
+        dayElement.className = `calendar-day ${isToday ? 'today' : ''} ${isWeekend ? 'weekend' : ''}`;
+        dayElement.innerHTML = `<div class="calendar-day-number">${day}</div>`;
+
+        addEventsToCalendarDay(dayElement, currentDate, projetsFiltres);
+        calendarGrid.appendChild(dayElement);
+    }
+
+    // Jours du mois suivant
+    const totalCells = 42;
+    const remainingCells = totalCells - (startDay + lastDay.getDate());
+    for (let i = 1; i <= remainingCells; i++) {
+        const day = document.createElement('div');
+        day.className = 'calendar-day other-month';
+        const nextMonthDate = new Date(currentCalendarDate.getFullYear(), currentCalendarDate.getMonth() + 1, i);
+        day.innerHTML = `<div class="calendar-day-number">${i}</div>`;
+
+        if (nextMonthDate.getDay() === 0 || nextMonthDate.getDay() === 6) {
+            day.classList.add('weekend');
+        }
+
+        addEventsToCalendarDay(day, nextMonthDate, projetsFiltres);
+        calendarGrid.appendChild(day);
+    }
+}
+
+function addEventsToCalendarDay(dayElement, currentDate, projetsFiltres) {
+    const currDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate());
+
+    projetsFiltres.forEach(projet => {
+        let eventAdded = false;
+
+        // Vérifier période AO Gagné
+        const startDateAO = new Date(projet.date_debut_ao);
+        const endDateAO = new Date(projet.date_fin_reelle_ao || projet.date_fin_ao);
+        const startDayAO = new Date(startDateAO.getFullYear(), startDateAO.getMonth(), startDateAO.getDate());
+        const endDayAO = new Date(endDateAO.getFullYear(), endDateAO.getMonth(), endDateAO.getDate());
+
+        if (currDay >= startDayAO && currDay <= endDayAO) {
+            const eventElement = createCalendarEvent(projet, 'AO', currentDate, startDateAO, endDateAO);
+            dayElement.appendChild(eventElement);
+            eventAdded = true;
+        }
+
+        // Vérifier période Terrain France (si existante)
+        if (projet.date_debut_terrain && projet.date_fin_prevue_terrain) {
+            const startDateTF = new Date(projet.date_debut_terrain);
+            const endDateTF = new Date(projet.date_fin_terrain_reelle || projet.date_fin_prevue_terrain);
+            const startDayTF = new Date(startDateTF.getFullYear(), startDateTF.getMonth(), startDateTF.getDate());
+            const endDayTF = new Date(endDateTF.getFullYear(), endDateTF.getMonth(), endDateTF.getDate());
+
+            if (currDay >= startDayTF && currDay <= endDayTF) {
+                const eventElement = createCalendarEvent(projet, 'TF', currentDate, startDateTF, endDateTF);
+                dayElement.appendChild(eventElement);
+                eventAdded = true;
+            }
+        }
+
+        // NOUVEAU : Vérifier période Traitement France (si existante)
+        if (projet.date_debut_traitement && projet.date_fin_prevue_traitement) {
+            const startDateTrait = new Date(projet.date_debut_traitement);
+            const endDateTrait = new Date(projet.date_fin_traitement_reelle || projet.date_fin_prevue_traitement);
+            const startDayTrait = new Date(startDateTrait.getFullYear(), startDateTrait.getMonth(), startDateTrait.getDate());
+            const endDayTrait = new Date(endDateTrait.getFullYear(), endDateTrait.getMonth(), endDateTrait.getDate());
+
+            if (currDay >= startDayTrait && currDay <= endDayTrait) {
+                const eventElement = createCalendarEvent(projet, 'Trait', currentDate, startDateTrait, endDateTrait);
+                dayElement.appendChild(eventElement);
+                eventAdded = true;
+            }
+        }
+
+        // NOUVEAU : Vérifier période Envoi Mada (si existante)
+        if (projet.date_envoi_mada && projet.date_livraison_prevue_mada) {
+            const startDateEnvoi = new Date(projet.date_envoi_mada);
+            const endDateEnvoi = new Date(projet.date_livraison_reelle_mada || projet.date_livraison_prevue_mada);
+            const startDayEnvoi = new Date(startDateEnvoi.getFullYear(), startDateEnvoi.getMonth(), startDateEnvoi.getDate());
+            const endDayEnvoi = new Date(endDateEnvoi.getFullYear(), endDateEnvoi.getMonth(), endDateEnvoi.getDate());
+
+            if (currDay >= startDayEnvoi && currDay <= endDayEnvoi) {
+                const eventElement = createCalendarEvent(projet, 'Envoi', currentDate, startDateEnvoi, endDateEnvoi);
+                dayElement.appendChild(eventElement);
+                eventAdded = true;
+            }
+        }
+    });
+}
+
+function createCalendarEvent(projet, type, currentDate, startDate, endDate) {
+    const eventElement = document.createElement('div');
+    const color = getColorForProjet(projet);
+    eventElement.className = 'calendar-event';
+    eventElement.style.background = color;
+
+    const isStartDay = startDate.toDateString() === currentDate.toDateString();
+    const isEndDay = endDate.toDateString() === currentDate.toDateString();
+
+    let opacity = '0.7';
+    if (isStartDay || isEndDay) {
+        opacity = '1';
+        if (isStartDay) eventElement.style.borderLeft = '3px solid #000';
+        if (isEndDay) eventElement.style.borderRight = '3px solid #000';
+    }
+
+    if (type === 'TF') {
+        eventElement.style.opacity = '0.8';
+    } else if (type === 'Trait') {
+        eventElement.style.opacity = '0.75';
+    } else if (type === 'Envoi') {
+        eventElement.style.opacity = '0.65';
+    } else {
+        eventElement.style.opacity = opacity;
+    }
+
+    const typeLabel = type === 'AO' ? 'AO' : (type === 'TF' ? 'TF' : (type === 'Trait' ? 'Trait' : 'Envoi'));
+    eventElement.textContent = `${projet.reference} (${typeLabel})`;
+    eventElement.title = `${projet.reference} - ${type === 'AO' ? 'AO Gagné' : (type === 'TF' ? 'Terrain France' : (type === 'Trait' ? 'Traitement France' : 'Envoi Mada'))}\n${startDate.toLocaleDateString()} → ${endDate.toLocaleDateString()}`;
+    eventElement.onclick = () => showProjetDetails(projet.id);
+
+    return eventElement;
+}
+
+function generateActionButtons(projet) {
+    let buttons = '';
+
+    switch(projet.etape) {
+        case 'AO Gagné':
+            buttons = `
+                <button class="btn btn-sm btn-primary" onclick="showTerrainFranceModal(${projet.id})">
+                    <i class="fas fa-play me-1"></i>Commencer
+                </button>
+            `;
+            break;
+        case 'Terrain France':
+            buttons = `
+                <button class="btn btn-sm btn-success" onclick="showFinTerrainFranceModal(${projet.id})">
+                    <i class="fas fa-stop me-1"></i>Fin Terrain
+                </button>
+            `;
+            break;
+        case 'Terrain France terminé':
+        case 'Traitement France':
+            buttons = `
+                <button class="btn btn-sm btn-primary" onclick="showTraitementFranceModal(${projet.id})">
+                    <i class="fas fa-play me-1"></i>Commencer Traitement
+                </button>
+            `;
+            break;
+        case 'Traitement France en cours':
+            buttons = `
+                <button class="btn btn-sm btn-success" onclick="showFinTraitementFranceModal(${projet.id})">
+                    <i class="fas fa-stop me-1"></i>Fin Traitement
+                </button>
+            `;
+            break;
+        case 'Prêt pour envoi Mada':
+            buttons = `
+                <button class="btn btn-sm btn-warning" onclick="showEnvoiMadaModal(${projet.id})">
+                    <i class="fas fa-paper-plane me-1"></i>Envoyer à Mada
+                </button>
+            `;
+            break;
+        case 'Envoi des données à Mada':
+            // CORRECTION : Pour "Envoi des données à Mada", on affiche "En attente"
+            buttons = `
+                <button class="btn btn-sm btn-outline-secondary" disabled>
+                    <i class="fas fa-clock me-1"></i>En attente
+                </button>
+            `;
+            break;
+        case 'Problème de réception':
+            // Gestion spéciale pour problème de réception
+            if (projet.probleme_confirme) {
+                // Après confirmation, on peut ré-envoyer
+                buttons = `
+                    <button class="btn btn-sm btn-warning" onclick="showEnvoiMadaModal(${projet.id})">
+                        <i class="fas fa-paper-plane me-1"></i>Envoyer à Mada
+                    </button>
+                `;
+            } else {
+                // Avant confirmation, bouton OK
+                buttons = `
+                    <button class="btn btn-sm btn-info" onclick="confirmerProblemeReception(${projet.id})">
+                        <i class="fas fa-check me-1"></i>OK
+                    </button>
+                `;
+            }
+            break;
+        default:
+            buttons = `
+                <button class="btn btn-sm btn-outline-secondary" disabled>
+                    <i class="fas fa-clock me-1"></i>En attente
+                </button>
+            `;
+    }
+
+    return buttons;
+}
+
+
+function confirmerProblemeReception(projetId) {
+    if (!confirm('Confirmez-vous avoir pris connaissance du problème de réception ?')) {
+        return;
+    }
+
+    fetch(`/agences/api/confirmer-probleme-reception/${projetId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessMessage('Problème de réception confirmé. Vous pouvez maintenant ré-envoyer à Mada.');
+            loadProjetsCA(); // Recharger les données
+        } else {
+            showError('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showError('Erreur lors de la confirmation du problème');
+    });
+}
+
+
+function loadResponsablesProdByAgence(agenceId, selectElement) {
+    fetch('/agences/api/responsables-prod/')
+        .then(response => response.json())
+        .then(data => {
+            selectElement.innerHTML = '<option value="">Sélectionnez un responsable</option>';
+
+            // Si aucune agence n'est sélectionnée, ne rien afficher
+            if (!agenceId || agenceId === "") {
+                return;
+            }
+
+            // Récupérer le nom de l'agence sélectionnée depuis le select
+            const agenceSelect = document.getElementById('agence_terrain') || document.getElementById('agence_traitement');
+            const agenceName = agenceSelect.options[agenceSelect.selectedIndex].text;
+
+            // Filtrer les responsables par nom d'agence exact
+            const responsablesFiltres = data.responsables.filter(responsable => {
+                return responsable.agence && responsable.agence === agenceName;
+            });
+
+            responsablesFiltres.forEach(responsable => {
+                const option = document.createElement('option');
+                option.value = responsable.id;
+                option.textContent = `${responsable.prenoms} ${responsable.nom} - ${responsable.agence}`;
+                selectElement.appendChild(option);
+            });
+
+            // Si aucun responsable trouvé
+            if (responsablesFiltres.length === 0) {
+                const option = document.createElement('option');
+                option.value = "";
+                option.textContent = "Aucun responsable PROD trouvé pour cette agence";
+                option.disabled = true;
+                selectElement.appendChild(option);
+            }
+        })
+        .catch(error => {
+            console.error('Erreur lors du chargement des responsables prod:', error);
+            selectElement.innerHTML = '<option value="">Erreur de chargement</option>';
+        });
+}
+
+function commencerTerrainFrance(e) {
+    e.preventDefault();
+
+    const formData = {
+        projet_id: currentProjetId,
+        nom_affaire: document.getElementById('nom_affaire').value,
+        date_debut: document.getElementById('date_debut_terrain').value,
+        date_fin_prevue: document.getElementById('date_fin_prevue_terrain').value,
+        agence_id: document.getElementById('agence_terrain').value,
+        responsable_prod_id: document.getElementById('responsable_prod_terrain').value
+    };
+
+    fetch('/agences/api/commencer-terrain-france/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessMessage('Terrain France démarré avec succès !');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('terrainFranceModal'));
+            modal.hide();
+            loadProjetsCA();
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors du démarrage du terrain France');
+    });
+}
+
+function showFinTerrainFranceModal(projetId) {
+    currentProjetId = projetId;
+    const modal = new bootstrap.Modal(document.getElementById('finTerrainFranceModal'));
+    modal.show();
+}
+
+function confirmerFinTerrain() {
+    const commentaire = document.getElementById('commentaire_fin_terrain').value;
+
+    fetch(`/agences/api/fin-terrain-france/${currentProjetId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify({
+            commentaire: commentaire
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessMessage('Terrain France terminé avec succès !');
+
+            // ← FIX : Set ID explicitement avant rechargement
+            // (au cas où loadProjetsCA reset)
+            console.log('ID préservé pour Traitement:', currentProjetId);  // ← TEMP
+
+            // Montre le bouton AVANT rechargement
+            document.getElementById('commencer-traitement').style.display = 'inline-block';
+
+            // Fermer le modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('finTerrainFranceModal'));
+            modal.hide();
+
+            // Recharger
+            loadProjetsCA();
+
+        } else {
+            showError('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showError('Erreur lors de la fin du terrain France');
+    });
+}
+
+function showTraitementFranceModal(projetId) {
+    console.log('Debug - showTraitementFranceModal appelée avec ID:', projetId);  // ← TEMP : Check console au clic
+
+    if (!projetId) {
+        showError('Erreur: ID du projet manquant');
+        return;
+    }
+
+    currentProjetId = projetId;  // Sync globale
+
+    const projet = projetsCA.find(p => p.id === projetId);
+    if (projet) {
+        console.log('Projet trouvé:', projet.reference);  // ← TEMP : Vérif
+
+        document.getElementById('traitement-ao-id').value = projetId;
+
+        // Pré-remplir avec les données du terrain France
+        document.getElementById('nom_affaire_traitement').value = projet.nom_affaire || projet.reference;
+        const agenceTerrain = projet.agence_terrain;
+        document.getElementById('agence_traitement').value = agenceTerrain ? agenceTerrain.id : '';
+
+        // Grisez le champ agence et responsable prod
+        document.getElementById('agence_traitement').disabled = true;
+        document.getElementById('responsable_prod_traitement').disabled = true;
+
+        // Pré-remplir le responsable prod si disponible
+        if (projet.responsable_prod_terrain && projet.responsable_prod_terrain !== 'Non assigné') {
+            const select = document.getElementById('responsable_prod_traitement');
+            for (let i = 0; i < select.options.length; i++) {
+                if (select.options[i].textContent.includes(projet.responsable_prod_terrain.split(' ')[0])) {
+                    select.value = select.options[i].value;
+                    break;
+                }
+            }
+        }
+
+        document.getElementById('date_debut_traitement').valueAsDate = new Date();
+
+        const dateFin = new Date();
+        dateFin.setDate(dateFin.getDate() + 5);
+        document.getElementById('date_fin_prevue_traitement').valueAsDate = dateFin;
+
+        const modal = new bootstrap.Modal(document.getElementById('traitementFranceModal'));
+        modal.show();
+    } else {
+        console.error('Projet non trouvé pour ID:', projetId);  // ← Debug
+        showError('Erreur: Projet non trouvé');
+    }
+}
+
+function commencerTraitementFrance(e) {
+    e.preventDefault();
+
+    console.log('Debug - Submit Traitement : currentProjetId =', currentProjetId);  // ← AJOUT TEMPORAIRE
+
+    const formData = {
+        projet_id: currentProjetId,
+        nom_affaire: document.getElementById('nom_affaire_traitement').value,
+        date_debut: document.getElementById('date_debut_traitement').value,
+        date_fin_prevue: document.getElementById('date_fin_prevue_traitement').value,
+        agence_id: document.getElementById('agence_traitement').value,
+        responsable_prod_id: document.getElementById('responsable_prod_traitement').value
+    };
+
+    fetch('/agences/api/commencer-traitement-france/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessMessage('Traitement France démarré avec succès !');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('traitementFranceModal'));
+            modal.hide();
+
+            // Réactiver les champs désactivés
+            document.getElementById('agence_traitement').disabled = false;
+            document.getElementById('responsable_prod_traitement').disabled = false;
+
+            loadProjetsCA();
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors du démarrage du traitement France');
+
+        // Réactiver les champs en cas d'erreur
+        document.getElementById('agence_traitement').disabled = false;
+        document.getElementById('responsable_prod_traitement').disabled = false;
+    });
+}
+
+function showFinTraitementFranceModal(projetId) {
+    currentProjetId = projetId;
+    const modal = new bootstrap.Modal(document.getElementById('finTraitementFranceModal'));
+    modal.show();
+}
+
+function showTerrainFranceModal(projetId) {
+    currentProjetId = projetId;
+    const projet = projetsCA.find(p => p.id === projetId);
+    if (projet) {
+        document.getElementById('terrain-ao-id').value = projetId;
+        document.getElementById('nom_affaire').value = projet.reference;
+        document.getElementById('date_debut_terrain').valueAsDate = new Date();
+
+        const dateFin = new Date();
+        dateFin.setDate(dateFin.getDate() + 7);
+        document.getElementById('date_fin_prevue_terrain').valueAsDate = dateFin;
+
+        // RÉINITIALISER LES CHAMPS DU MODAL
+        document.getElementById('agence_terrain').value = "";
+        document.getElementById('responsable_prod_terrain').innerHTML = '<option value="">Sélectionnez un responsable</option>';
+
+        const modal = new bootstrap.Modal(document.getElementById('terrainFranceModal'));
+        modal.show();
+    }
+}
+
+function confirmerFinTraitement() {
+    const commentaire = document.getElementById('commentaire_fin_traitement').value;
+
+    fetch(`/agences/api/fin-traitement-france/${currentProjetId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify({
+            commentaire: commentaire
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessMessage('Traitement France terminé avec succès !');
+
+            // ← CHANGÉ : Pas de bouton forcé ici. Juste fermer et recharger
+            const modal = bootstrap.Modal.getInstance(document.getElementById('finTraitementFranceModal'));
+            modal.hide();
+
+            loadProjetsCA();  // → Migre le projet vers 'Prêt pour envoi Mada' en Kanban
+        } else {
+            showError('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        showError('Erreur lors de la fin du traitement France');
+    });
+}
+
+function showEnvoiMadaModal(projetId) {
+    if (projetId) {
+        currentProjetId = projetId;  // Sync si passé explicitement
+    }
+
+    const projet = projetsCA.find(p => p.id === currentProjetId);
+    if (projet) {
+        document.getElementById('envoi-ao-id').value = currentProjetId;
+        document.getElementById('nom_affaire_envoi').value = projet.nom_affaire_traitement || projet.nom_affaire || projet.reference;
+        document.getElementById('agence_envoi').value = projet.agence_traitement ? projet.agence_traitement.nom : (projet.agence_terrain ? projet.agence_terrain.nom : projet.agence);
+        document.getElementById('responsable_prod_envoi').value = projet.responsable_prod_traitement || projet.responsable_prod_terrain || 'Non assigné';
+
+        // Dates suggérées : aujourd'hui pour envoi, +3 jours pour livraison
+        document.getElementById('date_envoi').valueAsDate = new Date();
+        const dateLivraison = new Date();
+        dateLivraison.setDate(dateLivraison.getDate() + 3);
+        document.getElementById('date_livraison').valueAsDate = dateLivraison;
+
+        const modal = new bootstrap.Modal(document.getElementById('envoiMadaModal'));
+        modal.show();
+    } else {
+        showError('Erreur: Projet non trouvé');
+    }
+}
+
+function envoyerDonneesMada(e) {
+    e.preventDefault();
+
+    const formData = {
+        projet_id: currentProjetId,
+        date_envoi: document.getElementById('date_envoi').value,
+        date_livraison: document.getElementById('date_livraison').value,
+        info_supplementaire: document.getElementById('info_supplementaire').value
+    };
+
+    fetch('/agences/api/envoyer-donnees-mada/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+        },
+        body: JSON.stringify(formData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccessMessage('Données envoyées à Mada avec succès !');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('envoiMadaModal'));
+            modal.hide();
+            loadProjetsCA();
+        } else {
+            alert('Erreur: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de l\'envoi des données à Mada');
+    });
+}
+
+// === FONCTIONS UTILITAIRES ===
+
+function getProjetsFiltres() {
+    if (!filtersApplied) {
+        return projetsCA;
+    }
+
+    let etapesSelectionnees = getCheckedValues('#filter-etat .filter-checkbox');
+
+    // ← MODIFIÉ : Extension logique pour grouper les étapes "Envoi Mada" (incluant Problème de réception)
+    const etapesEtendues = [...etapesSelectionnees];  // Copie de base
+
+    // Groupe des étapes liées à l'envoi Mada
+    const envoiGroup = ['Prêt pour envoi Mada', 'Envoi des données à Mada', 'Problème de réception'];
+
+    // Vérifie si au moins une étape du groupe est sélectionnée
+    const isEnvoiGroupSelected = envoiGroup.some(etape => etapesSelectionnees.includes(etape));
+
+    if (isEnvoiGroupSelected) {
+        // Ajoute toutes les étapes du groupe si au moins une est cochée
+        envoiGroup.forEach(etape => {
+            if (!etapesEtendues.includes(etape)) {
+                etapesEtendues.push(etape);
+            }
+        });
+    }
+
+    const agencesSelectionnees = getCheckedValues('#filter-agence .filter-checkbox');
+    const prodSelectionnes = getCheckedValues('#filter-prod .filter-checkbox');
+    const projetsSelectionnes = getCheckedValues('#filter-projet .filter-checkbox');
+
+    return projetsCA.filter(projet => {
+        if (etapesEtendues.length > 0 && !etapesEtendues.includes(projet.etape)) {
+            return false;
+        }
+        if (agencesSelectionnees.length > 0 && !agencesSelectionnees.includes(projet.agence)) {
+            return false;
+        }
+        if (prodSelectionnes.length > 0 && !prodSelectionnes.includes(projet.responsable_prod)) {
+            return false;
+        }
+        if (projetsSelectionnes.length > 0 && !projetsSelectionnes.includes(projet.reference)) {
+            return false;
+        }
+        return true;
+    });
+}
+
+function getCheckedValues(selector) {
+    const checked = [];
+    document.querySelectorAll(selector).forEach(checkbox => {
+        if (checkbox.checked) {
+            checked.push(checkbox.value);
+        }
+    });
+    return checked;
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-FR');
+}
+
+function updateAllViews() {
+    generateGanttView();
+    generateKanbanView();
+    generateTimelineView();
+    generateCalendarView();
+}
+
+function updateFilterProd() {
+    const filterProd = document.getElementById('filter-prod');
+    const responsables = [...new Set(projetsCA.map(p => p.responsable_prod))];
+
+    filterProd.innerHTML = '';
+    responsables.forEach(responsable => {
+        if (responsable && responsable !== 'Non assigné') {
+            const div = document.createElement('div');
+            div.className = 'form-check';
+            div.innerHTML = `
+                <input class="form-check-input filter-checkbox" type="checkbox" value="${responsable}" id="filter-prod-${responsable}" checked>
+                <label class="form-check-label" for="filter-prod-${responsable}">
+                    ${responsable}
+                </label>
+            `;
+            filterProd.appendChild(div);
+        }
+    });
+}
+
+function updateFilterProjet() {
+    const filterProjet = document.getElementById('filter-projet');
+    const references = [...new Set(projetsCA.map(p => p.reference))];
+
+    filterProjet.innerHTML = '';
+    references.forEach(reference => {
+        const div = document.createElement('div');
+        div.className = 'form-check';
+        div.innerHTML = `
+            <input class="form-check-input filter-checkbox" type="checkbox" value="${reference}" id="filter-projet-${reference}" checked>
+            <label class="form-check-label" for="filter-projet-${reference}">
+                ${reference}
+            </label>
+        `;
+        filterProjet.appendChild(div);
+    });
+}
+
+function updateAlertes() {
+    const alertesContainer = document.getElementById('alertes-container');
+    const today = new Date();
+
+    const projetsEnRetard = projetsCA.filter(projet => {
+        const dateFin = new Date(projet.date_fin_prevue);
+        return dateFin < today && projet.etape !== 'Prod en cours Mada';
+    });
+
+    alertesContainer.innerHTML = '';
+
+    if (projetsEnRetard.length > 0) {
+        const alerte = document.createElement('div');
+        alerte.className = 'alerte-retard';
+        alerte.innerHTML = `
+            <h6><i class="fas fa-exclamation-triangle me-2"></i>Projets en retard</h6>
+            <p class="mb-0">${projetsEnRetard.length} projet(s) nécessite(nt) votre attention.</p>
+        `;
+        alertesContainer.appendChild(alerte);
+    }
+}
+
+function showProjetDetails(projetId) {
+    const projet = projetsCA.find(p => p.id === projetId);
+    if (projet) {
+        let detailsContent = '';
+
+        // Construction du contenu selon l'étape
+        switch(projet.etape) {
+            ////////////////////////
+            case 'AO Gagné':
+                detailsContent = `
+                    <div class="accordion" id="detailsAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAO">
+                                    <strong>📋 AO Gagné</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseAO" class="accordion-collapse collapse show" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Référence AO:</strong> ${projet.reference}</p>
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire}</p>
+                                            <p><strong>Agence:</strong> ${projet.agence}</p>
+                                            <p><strong>Prestations:</strong> ${projet.prestations.join(', ')}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date début AO:</strong> ${projet.date_debut_ao ? formatDate(projet.date_debut_ao) : 'Non définie'}</p>
+                                            <p><strong>Date fin prévue AO:</strong> ${projet.date_fin_ao ? formatDate(projet.date_fin_ao) : 'Non définie'}</p>
+                                            ${projet.date_fin_reelle_ao ? `<p><strong>Date fin réelle AO:</strong> ${formatDate(projet.date_fin_reelle_ao)}</p>` : ''}
+                                            <p><strong>Commercial:</strong> ${projet.commercial}</p>
+                                            <p><strong>Responsable CA:</strong> ${projet.responsable_ca}</p>
+                                        </div>
+                                    </div>
+                                    ${projet.description ? `<hr><p><strong>Description:</strong><br>${projet.description}</p>` : ''}
+                                    ${projet.commentaire_arret ? `<hr><p><strong>Commentaire arrêt:</strong><br>${projet.commentaire_arret}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+
+            /////////////////////////
+            case 'Terrain France':
+                detailsContent = `
+                    <div class="accordion" id="detailsAccordion">
+                        <!-- Section AO Gagné -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAO">
+                                    <strong>📋 AO Gagné</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseAO" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Référence AO:</strong> ${projet.reference}</p>
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire}</p>
+                                            <p><strong>Agence:</strong> ${projet.agence}</p>
+                                            <p><strong>Prestations:</strong> ${projet.prestations.join(', ')}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date début AO:</strong> ${projet.date_debut_ao ? formatDate(projet.date_debut_ao) : 'Non définie'}</p>
+                                            <p><strong>Date fin prévue AO:</strong> ${projet.date_fin_ao ? formatDate(projet.date_fin_ao) : 'Non définie'}</p>
+                                            ${projet.date_fin_reelle_ao ? `<p><strong>Date fin réelle AO:</strong> ${formatDate(projet.date_fin_reelle_ao)}</p>` : ''}
+                                        </div>
+                                    </div>
+                                    ${projet.description ? `<hr><p><strong>Description:</strong><br>${projet.description}</p>` : ''}
+                                    ${projet.commentaire_arret ? `<hr><p><strong>Commentaire arrêt:</strong><br>${projet.commentaire_arret}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section Terrain France -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTerrain">
+                                    <strong>🏗️ Terrain France</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseTerrain" class="accordion-collapse collapse show" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire}</p>
+                                            <p><strong>Agence Terrain:</strong> ${projet.agence_terrain ? projet.agence_terrain.nom : (projet.agence || 'Non définie')}</p>
+                                            <p><strong>Responsable Prod:</strong> ${projet.responsable_prod_terrain || 'Non assigné'}</p>
+                                            <p><strong>Date début Terrain:</strong> ${projet.date_debut_terrain ? formatDate(projet.date_debut_terrain) : 'Non définie'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date fin prévue Terrain:</strong> ${projet.date_fin_prevue_terrain ? formatDate(projet.date_fin_prevue_terrain) : 'Non définie'}</p>
+                                            ${projet.date_fin_terrain_reelle ? `<p><strong>Date fin réelle Terrain:</strong> ${formatDate(projet.date_fin_terrain_reelle)}</p>` : ''}
+                                            <p><strong>Commercial:</strong> ${projet.commercial}</p>
+                                            <p><strong>Responsable CA:</strong> ${projet.responsable_ca}</p>
+                                        </div>
+                                    </div>
+                                    ${projet.commentaire_fin_terrain ? `<hr><p><strong>Commentaire fin terrain:</strong><br>${projet.commentaire_fin_terrain}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+
+
+            /////////////////////////////
+            case 'Traitement France':
+            case 'Traitement France en cours':
+                detailsContent = `
+                    <div class="accordion" id="detailsAccordion">
+                        <!-- Section AO Gagné -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAO">
+                                    <strong>📋 AO Gagné</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseAO" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Référence AO:</strong> ${projet.reference}</p>
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire}</p>
+                                            <p><strong>Agence:</strong> ${projet.agence}</p>
+                                            <p><strong>Prestations:</strong> ${projet.prestations.join(', ')}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date début AO:</strong> ${projet.date_debut_ao ? formatDate(projet.date_debut_ao) : 'Non définie'}</p>
+                                            <p><strong>Date fin prévue AO:</strong> ${projet.date_fin_ao ? formatDate(projet.date_fin_ao) : 'Non définie'}</p>
+                                            ${projet.date_fin_reelle_ao ? `<p><strong>Date fin réelle AO:</strong> ${formatDate(projet.date_fin_reelle_ao)}</p>` : ''}
+                                        </div>
+                                    </div>
+                                    ${projet.description ? `<hr><p><strong>Description:</strong><br>${projet.description}</p>` : ''}
+                                    ${projet.commentaire_arret ? `<hr><p><strong>Commentaire arrêt:</strong><br>${projet.commentaire_arret}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section Terrain France -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTerrain">
+                                    <strong>🏗️ Terrain France</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseTerrain" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire}</p>
+                                            <p><strong>Agence Terrain:</strong> ${projet.agence_terrain ? projet.agence_terrain.nom : (projet.agence || 'Non définie')}</p>
+                                            <p><strong>Responsable Prod:</strong> ${projet.responsable_prod_terrain || 'Non assigné'}</p>
+                                            <p><strong>Date début Terrain:</strong> ${projet.date_debut_terrain ? formatDate(projet.date_debut_terrain) : 'Non définie'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date fin prévue Terrain:</strong> ${projet.date_fin_prevue_terrain ? formatDate(projet.date_fin_prevue_terrain) : 'Non définie'}</p>
+                                            ${projet.date_fin_terrain_reelle ? `<p><strong>Date fin réelle Terrain:</strong> ${formatDate(projet.date_fin_terrain_reelle)}</p>` : ''}
+                                        </div>
+                                    </div>
+                                    ${projet.commentaire_fin_terrain ? `<hr><p><strong>Commentaire fin terrain:</strong><br>${projet.commentaire_fin_terrain}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section Traitement France -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTraitement">
+                                    <strong>⚙️ Traitement France</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseTraitement" class="accordion-collapse collapse show" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire_traitement || projet.nom_affaire}</p>
+                                            <p><strong>Agence Traitement:</strong> ${projet.agence_traitement ? projet.agence_traitement.nom : (projet.agence_terrain ? projet.agence_terrain.nom : (projet.agence || 'Non définie'))}</p>
+                                            <p><strong>Responsable Prod:</strong> ${projet.responsable_prod_traitement || projet.responsable_prod_terrain || 'Non assigné'}</p>
+                                            <p><strong>Date début Traitement:</strong> ${projet.date_debut_traitement ? formatDate(projet.date_debut_traitement) : 'Non définie'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date fin prévue Traitement:</strong> ${projet.date_fin_prevue_traitement ? formatDate(projet.date_fin_prevue_traitement) : 'Non définie'}</p>
+                                            ${projet.date_fin_traitement_reelle ? `<p><strong>Date fin réelle Traitement:</strong> ${formatDate(projet.date_fin_traitement_reelle)}</p>` : ''}
+                                            <p><strong>Commercial:</strong> ${projet.commercial}</p>
+                                            <p><strong>Responsable CA:</strong> ${projet.responsable_ca}</p>
+                                        </div>
+                                    </div>
+                                    ${projet.commentaire_fin_traitement ? `<hr><p><strong>Commentaire fin traitement:</strong><br>${projet.commentaire_fin_traitement}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+
+            // ← NOUVEAU : Case pour Envoi des données à Mada (regroupe 'Prêt pour envoi Mada' et 'Envoi des données à Mada')
+            case 'Prêt pour envoi Mada':
+            case 'Envoi des données à Mada':
+            case 'Problème de réception':
+                detailsContent = `
+                    <div class="accordion" id="detailsAccordion">
+                        <!-- Section AO Gagné -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAO">
+                                    <strong>📋 AO Gagné</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseAO" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Référence AO:</strong> ${projet.reference}</p>
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire}</p>
+                                            <p><strong>Agence:</strong> ${projet.agence}</p>
+                                            <p><strong>Prestations:</strong> ${projet.prestations.join(', ')}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date début AO:</strong> ${projet.date_debut_ao ? formatDate(projet.date_debut_ao) : 'Non définie'}</p>
+                                            <p><strong>Date fin prévue AO:</strong> ${projet.date_fin_ao ? formatDate(projet.date_fin_ao) : 'Non définie'}</p>
+                                            ${projet.date_fin_reelle_ao ? `<p><strong>Date fin réelle AO:</strong> ${formatDate(projet.date_fin_reelle_ao)}</p>` : ''}
+                                        </div>
+                                    </div>
+                                    ${projet.description ? `<hr><p><strong>Description:</strong><br>${projet.description}</p>` : ''}
+                                    ${projet.commentaire_arret ? `<hr><p><strong>Commentaire arrêt:</strong><br>${projet.commentaire_arret}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section Terrain France -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTerrain">
+                                    <strong>🏗️ Terrain France</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseTerrain" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire}</p>
+                                            <p><strong>Agence Terrain:</strong> ${projet.agence_terrain ? projet.agence_terrain.nom : (projet.agence || 'Non définie')}</p>
+                                            <p><strong>Responsable Prod:</strong> ${projet.responsable_prod_terrain || 'Non assigné'}</p>
+                                            <p><strong>Date début Terrain:</strong> ${projet.date_debut_terrain ? formatDate(projet.date_debut_terrain) : 'Non définie'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date fin prévue Terrain:</strong> ${projet.date_fin_prevue_terrain ? formatDate(projet.date_fin_prevue_terrain) : 'Non définie'}</p>
+                                            ${projet.date_fin_terrain_reelle ? `<p><strong>Date fin réelle Terrain:</strong> ${formatDate(projet.date_fin_terrain_reelle)}</p>` : ''}
+                                        </div>
+                                    </div>
+                                    ${projet.commentaire_fin_terrain ? `<hr><p><strong>Commentaire fin terrain:</strong><br>${projet.commentaire_fin_terrain}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section Traitement France -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTraitement">
+                                    <strong>⚙️ Traitement France</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseTraitement" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire_traitement || projet.nom_affaire}</p>
+                                            <p><strong>Agence Traitement:</strong> ${projet.agence_traitement ? projet.agence_traitement.nom : (projet.agence_terrain ? projet.agence_terrain.nom : (projet.agence || 'Non définie'))}</p>
+                                            <p><strong>Responsable Prod:</strong> ${projet.responsable_prod_traitement || projet.responsable_prod_terrain || 'Non assigné'}</p>
+                                            <p><strong>Date début Traitement:</strong> ${projet.date_debut_traitement ? formatDate(projet.date_debut_traitement) : 'Non définie'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date fin prévue Traitement:</strong> ${projet.date_fin_prevue_traitement ? formatDate(projet.date_fin_prevue_traitement) : 'Non définie'}</p>
+                                            ${projet.date_fin_traitement_reelle ? `<p><strong>Date fin réelle Traitement:</strong> ${formatDate(projet.date_fin_traitement_reelle)}</p>` : ''}
+                                        </div>
+                                    </div>
+                                    ${projet.commentaire_fin_traitement ? `<hr><p><strong>Commentaire fin traitement:</strong><br>${projet.commentaire_fin_traitement}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section Envoi Mada (ouverte par défaut) -->
+                        <!-- Section Envoi Mada -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEnvoiMada">
+                                    <strong>📤 ${projet.etape === 'Problème de réception' ? 'Problème de Réception' : 'Envoi des données à Mada'}</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseEnvoiMada" class="accordion-collapse collapse show" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Date d'envoi:</strong> ${projet.date_envoi_mada ? formatDate(projet.date_envoi_mada) : 'Non définie'}</p>
+                                            <p><strong>Date livraison prévue Mada:</strong> ${projet.date_livraison_prevue_mada ? formatDate(projet.date_livraison_prevue_mada) : 'Non définie'}</p>
+                                            <p><strong>Date réception France:</strong> ${projet.date_reception_france ? formatDate(projet.date_reception_france) : 'Non définie'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Infos supplémentaires Mada:</strong> ${projet.info_supplementaire_mada || 'Aucune'}</p>
+                                            <p><strong>Commercial:</strong> ${projet.commercial}</p>
+                                            <p><strong>Responsable CA:</strong> ${projet.responsable_ca}</p>
+                                        </div>
+                                    </div>
+
+                                    ${projet.etape === 'Problème de réception' && projet.commentaire_fin_reprise ? `
+                                    <div class="alert alert-warning mt-3">
+                                        <strong>⚠️ Commentaire de non-réception PROD:</strong><br>
+                                        ${projet.commentaire_fin_reprise}
+                                    </div>
+                                    ` : ''}
+
+                                    <!-- AJOUT: Historique des commentaires -->
+                                    ${projet.historique_commentaires && projet.historique_commentaires.length > 0 ? `
+                                    <div class="mt-4">
+                                        <h6>📋 Historique des commentaires :</h6>
+                                        <div class="historique-commentaires" style="max-height: 200px; overflow-y: auto;">
+                                            ${projet.historique_commentaires.map((entry, index) => `
+                                                <div class="alert alert-light border mt-2 p-2">
+                                                    <small>
+                                                        <strong>${formatDate(entry.date)}</strong> -
+                                                        ${entry.type === 'non_recu' ? '❌ Non reçu' : '🔄 Avant ré-envoi'}<br>
+                                                        ${entry.commentaire}
+                                                    </small>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+
+            /////////////////////////////////////////////////
+            // Ajoutez ce cas après le case 'Prêt pour envoi Mada' / 'Envoi des données à Mada'
+            case 'Reprise des données France':
+            case 'Problème de réception':  // Ajoutez aussi ce cas si nécessaire
+                detailsContent = `
+                    <div class="accordion" id="detailsAccordion">
+                        <!-- Sections précédentes (fermées) -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAO">
+                                    <strong>📋 AO Gagné</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseAO" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Référence AO:</strong> ${projet.reference}</p>
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire}</p>
+                                            <p><strong>Agence:</strong> ${projet.agence}</p>
+                                            <p><strong>Prestations:</strong> ${projet.prestations.join(', ')}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date début AO:</strong> ${projet.date_debut_ao ? formatDate(projet.date_debut_ao) : 'Non définie'}</p>
+                                            <p><strong>Date fin prévue AO:</strong> ${projet.date_fin_ao ? formatDate(projet.date_fin_ao) : 'Non définie'}</p>
+                                            ${projet.date_fin_reelle_ao ? `<p><strong>Date fin réelle AO:</strong> ${formatDate(projet.date_fin_reelle_ao)}</p>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTerrain">
+                                    <strong>🏗️ Terrain France</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseTerrain" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire}</p>
+                                            <p><strong>Agence Terrain:</strong> ${projet.agence_terrain ? projet.agence_terrain.nom : (projet.agence || 'Non définie')}</p>
+                                            <p><strong>Responsable Prod:</strong> ${projet.responsable_prod_terrain || 'Non assigné'}</p>
+                                            <p><strong>Date début Terrain:</strong> ${projet.date_debut_terrain ? formatDate(projet.date_debut_terrain) : 'Non définie'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date fin prévue Terrain:</strong> ${projet.date_fin_prevue_terrain ? formatDate(projet.date_fin_prevue_terrain) : 'Non définie'}</p>
+                                            ${projet.date_fin_terrain_reelle ? `<p><strong>Date fin réelle Terrain:</strong> ${formatDate(projet.date_fin_terrain_reelle)}</p>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTraitement">
+                                    <strong>⚙️ Traitement France</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseTraitement" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire_traitement || projet.nom_affaire}</p>
+                                            <p><strong>Agence Traitement:</strong> ${projet.agence_traitement ? projet.agence_traitement.nom : (projet.agence_terrain ? projet.agence_terrain.nom : (projet.agence || 'Non définie'))}</p>
+                                            <p><strong>Responsable Prod:</strong> ${projet.responsable_prod_traitement || projet.responsable_prod_terrain || 'Non assigné'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date début Traitement:</strong> ${projet.date_debut_traitement ? formatDate(projet.date_debut_traitement) : 'Non définie'}</p>
+                                            <p><strong>Date fin prévue Traitement:</strong> ${projet.date_fin_prevue_traitement ? formatDate(projet.date_fin_prevue_traitement) : 'Non définie'}</p>
+                                            ${projet.date_fin_traitement_reelle ? `<p><strong>Date fin réelle Traitement:</strong> ${formatDate(projet.date_fin_traitement_reelle)}</p>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEnvoiMada">
+                                    <strong>📤 Envoi des données à Mada</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseEnvoiMada" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Date d'envoi:</strong> ${projet.date_envoi_mada ? formatDate(projet.date_envoi_mada) : 'Non définie'}</p>
+                                            <p><strong>Date livraison prévue Mada:</strong> ${projet.date_livraison_prevue_mada ? formatDate(projet.date_livraison_prevue_mada) : 'Non définie'}</p>
+                                            <p><strong>Date réception France:</strong> ${projet.date_livraison_reelle_mada ? formatDate(projet.date_livraison_reelle_mada) : 'Non définie'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Infos supplémentaires Mada:</strong> ${projet.info_supplementaire_mada || 'Aucune'}</p>
+                                            <p><strong>Commercial:</strong> ${projet.commercial}</p>
+                                            <p><strong>Responsable CA:</strong> ${projet.responsable_ca}</p>
+                                        </div>
+                                    </div>
+                                    ${projet.commentaire_fin_traitement ? `<hr><p><strong>Commentaire fin traitement:</strong><br>${projet.commentaire_fin_traitement}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ← NOUVELLE SECTION : Reprise des données France (ouverte par défaut) -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseReprise">
+                                    <strong>🔄 ${projet.etape === 'Problème de réception' ? 'Problème de Réception' : 'Reprise des données France'}</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseReprise" class="accordion-collapse collapse show" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Référence:</strong> ${projet.reference}</p>
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire || projet.reference}</p>
+                                            <p><strong>Date début reprise:</strong> ${projet.date_debut_reprise ? formatDate(projet.date_debut_reprise) : 'Non définie'}</p>
+                                            <p><strong>Date fin prévue reprise:</strong> ${projet.date_fin_prevue_reprise ? formatDate(projet.date_fin_prevue_reprise) : 'Non définie'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>État:</strong> ${projet.etape === 'Problème de réception' ? 'Problème de réception' : (projet.etape_reprise_france === 'en_cours' ? 'En cours' : 'En attente')}</p>
+                                            <p><strong>Commentaire:</strong> ${projet.commentaire_fin_reprise || 'Aucun'}</p>
+                                            <p><strong>Agence:</strong> ${projet.agence}</p>
+                                            <p><strong>Responsable CA:</strong> ${projet.responsable_ca}</p>
+                                        </div>
+                                    </div>
+                                    ${projet.etape === 'Problème de réception' ? `
+                                    <div class="alert alert-warning mt-3">
+                                        <strong>⚠️ Problème de réception:</strong> Les données n'ont pas été reçues correctement.
+                                        ${projet.commentaire_fin_reprise ? `<br><strong>Commentaire:</strong> ${projet.commentaire_fin_reprise}` : ''}
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+
+            case 'Prod en cours Mada':
+                detailsContent = `
+                    <div class="accordion" id="detailsAccordion">
+                        <!-- Sections précédentes (fermées) -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAO">
+                                    <strong>📋 AO Gagné</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseAO" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Référence AO:</strong> ${projet.reference}</p>
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire}</p>
+                                            <p><strong>Agence:</strong> ${projet.agence}</p>
+                                            <p><strong>Prestations:</strong> ${projet.prestations.join(', ')}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date début AO:</strong> ${projet.date_debut_ao ? formatDate(projet.date_debut_ao) : 'Non définie'}</p>
+                                            <p><strong>Date fin prévue AO:</strong> ${projet.date_fin_ao ? formatDate(projet.date_fin_ao) : 'Non définie'}</p>
+                                            ${projet.date_fin_reelle_ao ? `<p><strong>Date fin réelle AO:</strong> ${formatDate(projet.date_fin_reelle_ao)}</p>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTerrain">
+                                    <strong>🏗️ Terrain France</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseTerrain" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire}</p>
+                                            <p><strong>Agence Terrain:</strong> ${projet.agence_terrain ? projet.agence_terrain.nom : (projet.agence || 'Non définie')}</p>
+                                            <p><strong>Responsable Prod:</strong> ${projet.responsable_prod_terrain || 'Non assigné'}</p>
+                                            <p><strong>Date début Terrain:</strong> ${projet.date_debut_terrain ? formatDate(projet.date_debut_terrain) : 'Non définie'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date fin prévue Terrain:</strong> ${projet.date_fin_prevue_terrain ? formatDate(projet.date_fin_prevue_terrain) : 'Non définie'}</p>
+                                            ${projet.date_fin_terrain_reelle ? `<p><strong>Date fin réelle Terrain:</strong> ${formatDate(projet.date_fin_terrain_reelle)}</p>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTraitement">
+                                    <strong>⚙️ Traitement France</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseTraitement" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire_traitement || projet.nom_affaire}</p>
+                                            <p><strong>Agence Traitement:</strong> ${projet.agence_traitement ? projet.agence_traitement.nom : (projet.agence_terrain ? projet.agence_terrain.nom : (projet.agence || 'Non définie'))}</p>
+                                            <p><strong>Responsable Prod:</strong> ${projet.responsable_prod_traitement || projet.responsable_prod_terrain || 'Non assigné'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date début Traitement:</strong> ${projet.date_debut_traitement ? formatDate(projet.date_debut_traitement) : 'Non définie'}</p>
+                                            <p><strong>Date fin prévue Traitement:</strong> ${projet.date_fin_prevue_traitement ? formatDate(projet.date_fin_prevue_traitement) : 'Non définie'}</p>
+                                            ${projet.date_fin_traitement_reelle ? `<p><strong>Date fin réelle Traitement:</strong> ${formatDate(projet.date_fin_traitement_reelle)}</p>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEnvoiMada">
+                                    <strong>📤 Envoi des données à Mada</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseEnvoiMada" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Date d'envoi:</strong> ${projet.date_envoi_mada ? formatDate(projet.date_envoi_mada) : 'Non définie'}</p>
+                                            <p><strong>Date livraison prévue Mada:</strong> ${projet.date_livraison_prevue_mada ? formatDate(projet.date_livraison_prevue_mada) : 'Non définie'}</p>
+                                            <p><strong>Date réception France:</strong> ${projet.date_livraison_reelle_mada ? formatDate(projet.date_livraison_reelle_mada) : 'Non définie'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Infos supplémentaires Mada:</strong> ${projet.info_supplementaire_mada || 'Aucune'}</p>
+                                            <p><strong>Commercial:</strong> ${projet.commercial}</p>
+                                            <p><strong>Responsable CA:</strong> ${projet.responsable_ca}</p>
+                                        </div>
+                                    </div>
+                                    ${projet.commentaire_fin_traitement ? `<hr><p><strong>Commentaire fin traitement:</strong><br>${projet.commentaire_fin_traitement}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseReprise">
+                                    <strong>🔄 Reprise des données France</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseReprise" class="accordion-collapse collapse" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Date début reprise:</strong> ${projet.date_debut_reprise ? formatDate(projet.date_debut_reprise) : 'Non définie'}</p>
+                                            <p><strong>Date fin prévue reprise:</strong> ${projet.date_fin_prevue_reprise ? formatDate(projet.date_fin_prevue_reprise) : 'Non définie'}</p>
+                                            <p><strong>Date fin réelle reprise:</strong> ${projet.date_fin_reprise_reelle ? formatDate(projet.date_fin_reprise_reelle) : 'Non définie'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Commentaire reprise:</strong> ${projet.commentaire_fin_reprise || 'Aucun'}</p>
+                                            <p><strong>État reprise:</strong> ${projet.etape_reprise_france === 'en_cours' ? 'En cours' : (projet.etape_reprise_france === 'termine' ? 'Terminé' : 'En attente')}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section Prod Mada (ouverte par défaut) -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseProdMada">
+                                    <strong>🏭 Production Madagascar</strong>
+                                </button>
+                            </h2>
+                            <div id="collapseProdMada" class="accordion-collapse collapse show" data-bs-parent="#detailsAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Référence:</strong> ${projet.reference}</p>
+                                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire || projet.reference}</p>
+                                            <p><strong>Date début Prod Mada:</strong> ${projet.date_debut_prod_mada ? formatDate(projet.date_debut_prod_mada) : 'Non définie'}</p>
+                                            <p><strong>Date fin prévue Prod Mada:</strong> ${projet.date_fin_prevue_prod_mada ? formatDate(projet.date_fin_prevue_prod_mada) : 'Non définie'}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Date fin réelle Prod Mada:</strong> ${projet.date_fin_prod_mada_reelle ? formatDate(projet.date_fin_prod_mada_reelle) : 'Non définie'}</p>
+                                            <p><strong>État:</strong> ${projet.etape_prod_mada === 'en_cours' ? 'En cours' : (projet.etape_prod_mada === 'termine' ? 'Terminé' : 'En attente')}</p>
+                                            <p><strong>Commentaire:</strong> ${projet.commentaire_fin_prod_mada || 'Aucun'}</p>
+                                            <p><strong>Responsable CA:</strong> ${projet.responsable_ca}</p>
+                                        </div>
+                                    </div>
+                                    ${projet.etape_prod_mada === 'termine' ? `
+                                    <div class="alert alert-success mt-3">
+                                        <strong>✅ Production terminée:</strong> Le projet a été complété avec succès.
+                                        ${projet.commentaire_fin_prod_mada ? `<br><strong>Commentaire:</strong> ${projet.commentaire_fin_prod_mada}` : ''}
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                break;
+
+            default:
+                detailsContent = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Référence AO:</strong> ${projet.reference}</p>
+                            <p><strong>Nom de l'affaire:</strong> ${projet.nom_affaire}</p>
+                            <p><strong>Agence:</strong> ${projet.agence}</p>
+                            <p><strong>Prestations:</strong> ${projet.prestations.join(', ')}</p>
+                            <p><strong>Date début AO:</strong> ${projet.date_debut_ao ? formatDate(projet.date_debut_ao) : 'Non définie'}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Date fin prévue AO:</strong> ${projet.date_fin_ao ? formatDate(projet.date_fin_ao) : 'Non définie'}</p>
+                            ${projet.date_fin_reelle_ao ? `<p><strong>Date fin réelle AO:</strong> ${formatDate(projet.date_fin_reelle_ao)}</p>` : ''}
+                            <p><strong>Étape actuelle:</strong> <span class="badge bg-${getStatusColor(projet.etape)}">${projet.etape}</span></p>
+                            <p><strong>Commercial:</strong> ${projet.commercial}</p>
+                            <p><strong>Responsable CA:</strong> ${projet.responsable_ca}</p>
+                        </div>
+                    </div>
+                    ${projet.description ? `<hr><p><strong>Description:</strong><br>${projet.description}</p>` : ''}
+                `;
+        }
+
+        const modalHtml = `
+            <div class="modal fade" id="detailModal" tabindex="-1">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title">Détails de ${projet.reference}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            ${detailsContent}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const modalContainer = document.createElement('div');
+        modalContainer.innerHTML = modalHtml;
+        document.body.appendChild(modalContainer);
+
+        const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+        modal.show();
+
+        document.getElementById('detailModal').addEventListener('hidden.bs.modal', function() {
+            modalContainer.remove();
+        });
+    }
+}
+
+function getStatusColor(etape) {
+    const colors = {
+        'AO Gagné': 'success',
+        'Terrain France': 'primary',
+        'Traitement France': 'info',
+        'Traitement France en cours': 'info',
+        'Prêt pour envoi Mada': 'warning',
+        'Envoi des données à Mada': 'warning',
+        'Reprise des données France': 'secondary',
+        'Problème de réception': 'danger',
+        'Prod en cours Mada': 'dark',
+        'Production terminée': 'success'
+    };
+    return colors[etape] || 'secondary';
+}
+
+// === FONCTIONS GLOBALES ===
+
+function toggleAllCheckboxes(filterType, checked) {
+    const checkboxes = document.querySelectorAll(`#filter-${filterType} .filter-checkbox`);
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = checked;
+    });
+}
+
+function invertCheckboxes(filterType) {
+    const checkboxes = document.querySelectorAll(`#filter-${filterType} .filter-checkbox`);
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = !checkbox.checked;
+    });
+}
+
+function applyFilters() {
+    filtersApplied = true;
+    saveFilters();
+    updateAllViews();
+    showSuccessMessage('Filtres appliqués avec succès');
+}
+
+function resetFilters() {
+    filtersApplied = false;
+    document.querySelectorAll('.filter-checkbox').forEach(checkbox => {
+        checkbox.checked = true;
+    });
+    saveFilters();
+    updateAllViews();
+    showSuccessMessage('Filtres réinitialisés');
+}
+
+function saveFilters() {
+    const filters = {};
+    document.querySelectorAll('.filter-checkbox').forEach(checkbox => {
+        filters[checkbox.id] = checkbox.checked;
+    });
+    localStorage.setItem('caFilters', JSON.stringify(filters));
+    localStorage.setItem('filtersAppliedCA', filtersApplied.toString());
+}
+
+function loadFilters() {
+    const savedFilters = localStorage.getItem('caFilters');
+    const savedApplied = localStorage.getItem('filtersAppliedCA');
+
+    if (savedFilters) {
+        const filters = JSON.parse(savedFilters);
+        Object.keys(filters).forEach(id => {
+            const checkbox = document.getElementById(id);
+            if (checkbox) {
+                checkbox.checked = filters[id];
+            }
+        });
+    }
+
+    if (savedApplied) {
+        filtersApplied = (savedApplied === 'true');
+    }
+}
+
+// Navigation calendrier
+function showTodayCalendar() {
+    currentCalendarDate = new Date();
+    generateCalendarView();
+}
+
+function prevMonthCalendar() {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+    generateCalendarView();
+}
+
+function nextMonthCalendar() {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+    generateCalendarView();
+}
+
+// Navigation Gantt par année
+function prevYearGantt() {
+    currentYear--;
+    document.getElementById('gantt-year-display').textContent = currentYear;
+    generateGanttView();
+}
+
+function nextYearGantt() {
+    currentYear++;
+    document.getElementById('gantt-year-display').textContent = currentYear;
+    generateGanttView();
+}
+
+// Navigation Timeline par année
+function prevYearTimeline() {
+    currentTimelineYear--;
+    document.getElementById('timeline-year-display').textContent = currentTimelineYear;
+    generateTimelineView();
+}
+
+function nextYearTimeline() {
+    currentTimelineYear++;
+    document.getElementById('timeline-year-display').textContent = currentTimelineYear;
+    generateTimelineView();
+}
+
+// Synchronisation du scroll
+function synchronizeGanttScroll() {
+    const ganttTimeline = document.querySelector('.gantt-timeline');
+    const ganttTimelineHeader = document.querySelector('.gantt-timeline-header');
+
+    if (ganttTimeline && ganttTimelineHeader) {
+        ganttTimeline.addEventListener('scroll', function() {
+            ganttTimelineHeader.scrollLeft = this.scrollLeft;
+            localStorage.setItem('ganttScrollLeftCA', this.scrollLeft);
+        });
+    }
+}
+
+function synchronizeTimelineScroll() {
+    const timelineEvents = document.querySelector('.timeline-events');
+    const timelineHeader = document.querySelector('.timeline-header');
+
+    if (timelineEvents && timelineHeader) {
+        timelineEvents.addEventListener('scroll', function() {
+            timelineHeader.scrollLeft = this.scrollLeft;
+            localStorage.setItem('timelineScrollLeftCA', this.scrollLeft);
+        });
+
+        timelineHeader.addEventListener('wheel', function(e) {
+            timelineEvents.scrollLeft += e.deltaY;
+            e.preventDefault();
+        });
+    }
+}
+
+// Ajouter cette fonction après synchronizeTimelineScroll()
+
+function synchronizeKanbanScroll() {
+    const kanbanBoard = document.querySelector('.kanban-board');
+    if (kanbanBoard) {
+        kanbanBoard.addEventListener('scroll', function() {
+            localStorage.setItem('kanbanScrollLeftCA', this.scrollLeft);
+        });
+    }
+}
+</script>
+
+{% endblock %}

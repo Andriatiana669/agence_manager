@@ -1,0 +1,43 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .import-excel-btn {
+        background: #28a745 !important;
+        color: white !important;
+        padding: 10px 15px !important;
+        border-radius: 4px !important;
+        text-decoration: none !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        margin-left: 10px !important;
+        border: none !important;
+        font-size: 14px !important;
+        font-weight: normal !important;
+    }
+
+    .import-excel-btn:hover {
+        background: #218838 !important;
+        color: white !important;
+        transform: translateY(-1px);
+    }
+
+    .import-excel-btn i {
+        margin-right: 8px !important;
+    }
+</style>
+{% endblock %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    {% if show_import_button %}
+    <li>
+        <a href="import-excel/" class="import-excel-btn">
+            <i class="fas fa-file-excel"></i>
+            {% trans "Importer depuis Excel" %}
+        </a>
+    </li>
+    {% endif %}
+{% endblock %}

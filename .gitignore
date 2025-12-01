@@ -1,0 +1,24 @@
+# --- Django ---
+*.pyc
+__pycache__/
+media/
+staticfiles/
+local_settings.py
+
+# --- Environnement virtuel ---
+venv/
+env/
+ENV/
+
+# --- PyCharm ---
+.idea/
+
+# --- Secrets ---
+.env
+
+# --- Bases PostgreSQL (exports) ---
+*.sql
+*.dump
+
+# --- Logs ---
+*.log

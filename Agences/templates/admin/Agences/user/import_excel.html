@@ -1,0 +1,95 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    .import-container {
+        max-width: 600px;
+        margin: 20px auto;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+    }
+    .instructions {
+        background: #e7f3ff;
+        padding: 15px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+        border-left: 4px solid #007bff;
+    }
+    .file-upload {
+        border: 2px dashed #007bff;
+        padding: 30px;
+        text-align: center;
+        border-radius: 8px;
+        margin: 20px 0;
+        background: #f8fbff;
+    }
+    .btn-import {
+        background: #28a745;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .btn-import:hover {
+        background: #218838;
+    }
+    .format-example {
+        background: white;
+        padding: 15px;
+        border-radius: 5px;
+        margin-top: 20px;
+        font-family: monospace;
+        font-size: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="import-container">
+    <h1>{% trans "Importer des utilisateurs depuis Excel" %}</h1>
+    
+    <div class="instructions">
+        <h3>{% trans "Instructions d'importation" %}</h3>
+        <p>{% trans "Le fichier Excel doit contenir les colonnes suivantes dans l'ordre :" %}</p>
+        <ol>
+            <li>{% trans "Nom (facultatif)" %}</li>
+            <li>{% trans "Prénoms (obligatoire)" %}</li>
+            <li>{% trans "Pseudo (obligatoire)" %}</li>
+            <li>{% trans "Email (obligatoire)" %}</li>
+            <li>{% trans "Type de prestation" %}</li>
+            <li>{% trans "Poste" %}</li>
+            <li>{% trans "Agence" %}</li>
+        </ol>
+        <p><strong>{% trans "Note :" %}</strong> {% trans "Si un utilisateur existe déjà (même email), ses prestations seront ajoutées sans écraser les existantes." %}</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="file-upload">
+            <i class="fas fa-file-excel fa-3x text-success mb-3"></i>
+            <h4>{% trans "Sélectionnez votre fichier Excel" %}</h4>
+            <input type="file" name="excel_file" accept=".xlsx,.xls" required>
+            <p class="text-muted mt-2">{% trans "Formats acceptés : .xlsx, .xls" %}</p>
+        </div>
+
+        <div class="format-example">
+            <strong>{% trans "Exemple de format :" %}</strong><br>
+            ALVES MARQUES | Alessio | Alessio | alessio.alves-marques@ecartip.fr | PLAN-TOPO | Commercial | Agence Clermont<br>
+            ALVES MARQUES | Alessio | Alessio | alessio.alves-marques@ecartip.fr | PLAN-ARCHITECTURE | Commercial | Agence Clermont
+        </div>
+
+        <div class="submit-row" style="margin-top: 20px;">
+            <button type="submit" class="btn-import">
+                <i class="fas fa-upload me-2"></i>{% trans "Importer les utilisateurs" %}
+            </button>
+            <a href="../" class="button" style="margin-left: 10px;">{% trans "Annuler" %}</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

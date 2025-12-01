@@ -1,0 +1,170 @@
+{% extends 'Agences/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="card">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                    <h2 class="card-title">Créer un compte</h2>
+                    <p class="text-muted">Rejoignez notre plateforme de gestion</p>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_prenoms" class="form-label">Prénoms *</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <input type="text" name="prenoms" id="id_prenoms" class="form-control"
+                                       placeholder="Vos prénoms" required value="{{ form.prenoms.value|default:'' }}">
+                            </div>
+                            {% if form.prenoms.errors %}
+                                <div class="text-danger small">{{ form.prenoms.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="id_nom" class="form-label">Nom</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <input type="text" name="nom" id="id_nom" class="form-control"
+                                       placeholder="Votre nom" value="{{ form.nom.value|default:'' }}">
+                            </div>
+                            {% if form.nom.errors %}
+                                <div class="text-danger small">{{ form.nom.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_pseudo" class="form-label">Pseudo *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-at"></i></span>
+                            <input type="text" name="pseudo" id="id_pseudo" class="form-control"
+                                   placeholder="Votre pseudo" required value="{{ form.pseudo.value|default:'' }}">
+                        </div>
+                        {% if form.pseudo.errors %}
+                            <div class="text-danger small">{{ form.pseudo.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label">Email *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            <input type="email" name="email" id="id_email" class="form-control"
+                                   placeholder="votre@email.com" required value="{{ form.email.value|default:'' }}">
+                        </div>
+                        {% if form.email.errors %}
+                            <div class="text-danger small">{{ form.email.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Nouveaux champs pour Agence, Poste et Types de Prestation -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="id_agence" class="form-label">Agence</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-building"></i></span>
+                                <select name="agence" id="id_agence" class="form-select">
+                                    <option value="">Sélectionnez une agence</option>
+                                    {% for agence in agences %}
+                                        <option value="{{ agence.id }}" {% if form.agence.value == agence.id %}selected{% endif %}>
+                                            {{ agence.nom }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% if form.agence.errors %}
+                                <div class="text-danger small">{{ form.agence.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="id_poste" class="form-label">Poste</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
+                                <select name="poste" id="id_poste" class="form-select">
+                                    <option value="">Sélectionnez un poste</option>
+                                    {% for poste in postes %}
+                                        <option value="{{ poste.id }}" {% if form.poste.value == poste.id %}selected{% endif %}>
+                                            {{ poste.get_nom_display }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            {% if form.poste.errors %}
+                                <div class="text-danger small">{{ form.poste.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_types_prestation" class="form-label">Types de prestation</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-tasks"></i></span>
+                            <select name="types_prestation" id="id_types_prestation" class="form-select" multiple size="4">
+                                {% for prestation in prestations %}
+                                    <option value="{{ prestation.id }}"
+                                            {% if prestation.id in form.types_prestation.value %}selected{% endif %}>
+                                        {{ prestation.nom }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-text">
+                            Maintenez la touche Ctrl (ou Cmd sur Mac) pour sélectionner plusieurs prestations
+                        </div>
+                        {% if form.types_prestation.errors %}
+                            <div class="text-danger small">{{ form.types_prestation.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_password1" class="form-label">Mot de passe *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <input type="password" name="password1" id="id_password1"
+                                   class="form-control" placeholder="Créez un mot de passe" required>
+                        </div>
+                        <div class="form-text">
+                            Laissez vide pour utiliser le mot de passe par défaut : "groupeparera*25"
+                        </div>
+                        {% if form.password1.errors %}
+                            <div class="text-danger small">{{ form.password1.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="id_password2" class="form-label">Confirmation du mot de passe *</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <input type="password" name="password2" id="id_password2"
+                                   class="form-control" placeholder="Confirmez le mot de passe" required>
+                        </div>
+                        {% if form.password2.errors %}
+                            <div class="text-danger small">{{ form.password2.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 mb-3">
+                        <i class="fas fa-user-plus me-2"></i>Créer mon compte
+                    </button>
+
+                    <div class="text-center">
+                        <p class="mb-0">
+                            Déjà inscrit ? 
+                            <a href="{% url 'login' %}" class="text-decoration-none">Se connecter</a>
+                        </p>
+                    </div>
+                </form>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
